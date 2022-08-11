@@ -4,3 +4,6 @@
 [submodule "externals/simplerILI9341"]
 	path = externals/simplerILI9341
 	url = https://github.com/mean00/simplerILI9341.git
+[submodule "externals/simpler_INA219"]
+	path = externals/simpler_INA219
+	url = https://github.com/mean00/simpler_INA219.git
