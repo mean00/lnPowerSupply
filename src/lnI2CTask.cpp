@@ -123,7 +123,7 @@ void i2cTask::run()
     {
        
        xDelay(50);
-
+        Logger("A\n");
         int ma=ina->getCurrent_mA();
         _currentMa=ma;
 
@@ -136,7 +136,7 @@ void i2cTask::run()
         _voltage=f;
 
         currentLimiter->setVoltage(_maxCurrentMa);
-       
+       Logger("B\n");
     }
 
 }
