@@ -13,13 +13,14 @@
 
 #include "waree36.h"
 #include "waree12.h"
+#include "robotoslab.h"
 
 
 extern lnI2cTask *createI2cTask();
 
 lnSpi9341           *ili;
 hwlnSPIClass        *spi;
-lnSimpleADC         *adc;
+lnTimingAdc         *adc;
 
 
 #define WW  280
@@ -30,23 +31,34 @@ extern const uint8_t dso_resetOff[];
 extern const uint8_t dso_wakeOn[];
 void i2cScanner();
 
-#define FONT Waree36pt7b
+//#define FONT Waree36pt7b
+#define FONT RobotoSlab_SemiBold48pt7b
 #define SMALLFONT Waree12pt7b
 
 
 #define ENABLE_CC
 
+#define MAIN_COLUMN  76
+#define LIMIT_COLUMN 318
+#define V_LINE      88
+#define A_LINE      176
+#define MAX_C_LINE  236
+
+#define ADC_SAMPLE 8
 
 /**
  * 
  */
+lnPin pins[2]={PS_PIN_VBAT, PS_PIN_MAX_CURRENT};
+void stopLowVoltage();
 void setup()
 {
     Logger("Setuping up Power Supply...\n");
     lnPinMode(LN_SYSTEM_LED,lnOUTPUT);
     lnPinMode(PS_PIN_VBAT,lnADC_MODE);
     lnPinMode(PA1,lnADC_MODE);
-    adc=new lnSimpleADC(0,PS_PIN_VBAT);
+    adc=new lnTimingAdc(0);
+    adc->setSource(3,3,1000,2,pins);
 
     lnPinMode(PIN_LED,lnOUTPUT);
     lnPinMode(PIN_SWITCH,lnINPUT_PULLUP);
@@ -78,70 +90,155 @@ int xround=0;
 int outputEnabled=false;
 lnI2cTask *tsk;
 
+float lastVoltage=-1;
+int   lastCurrent=-1;
+int   lastMaxCurrent=-1;
+int   lastCC=-1;
+bool  relayEnable=false;
+
+/**
+ * 
+ */
+void runAdc(int &vbat, int &maxCurrent)
+{
+    static uint16_t output[ADC_SAMPLE*2];
+    adc->multiRead(ADC_SAMPLE,output); 
+    uint16_t *p=output;
+    int max0=0,max1=0;
+    for(int i=0;i<ADC_SAMPLE;i++)
+    {
+            max0+=*p++;
+            max1+=*p++;
+    }
+    vbat = (max0 + ((ADC_SAMPLE-1)/2))/ADC_SAMPLE;
+    maxCurrent = (max1 + ((ADC_SAMPLE-1)/2))/ADC_SAMPLE;
+}
+/**
+ * 
+ */
 void loop()
 {
 
-   tsk=createI2cTask();
-   char buffer[64];
-   uint16_t output[2];
-   int pins[2]={PA0,PA1};
-   ili->fillScreen(BLACK);
+    tsk=createI2cTask();
+    xDelay(20); // let it start
+    char buffer[64];
+    
+    
+    ili->fillScreen(BLACK);
+    ili->setFontSize(ili9341::BigFont);            
+    ili->setCursor(4,V_LINE);
+    //ili->printUpTo("V",MAIN_COLUMN);
+    ili->setCursor(4,A_LINE);
+    //ili->printUpTo("mA",MAIN_COLUMN);
+
+    {
+        int ivbat, imaxAmp;
+        runAdc(ivbat, imaxAmp);
+        float vbat=(float)ivbat;
+        vbat=vbat*9;
+        vbat/=1000.;      
+        if(vbat<PS_MIN_VBAT)
+        {
+            stopLowVoltage();
+        }
+    }
+    tsk->setDCEnable(true);
+    tsk->setOutputEnable(true);
+
+
+
    while(1)
    {
-        lnDigitalToggle(LN_SYSTEM_LED);        
+        lnDigitalToggle(LN_SYSTEM_LED);    
+        lnDigitalToggle(PIN_LED);
+
         float voltage=tsk->getVoltage();
         int   current=tsk->getCurrent();
         bool  cc=tsk->getCCLimited();
 
+       
+
+        if(voltage!=lastVoltage)
+        {
+            lastVoltage=voltage;
+            ili->setFontSize(ili9341::BigFont);        
+            sprintf(buffer,"%2.2f",voltage);
+            ili->setCursor(MAIN_COLUMN,V_LINE);
+            if(cc)
+                ili->setTextColor(RED,BLACK);
+            ili->printUpTo(buffer,LIMIT_COLUMN);
+            ili->setTextColor(WHITE,BLACK);
+        }
+        if(lastCurrent!=current)
+        {
+            lastCurrent=current;
+            ili->setFontSize(ili9341::BigFont);
+            sprintf(buffer,"%d",current);
+            ili->setCursor(MAIN_COLUMN,A_LINE);
+            ili->printUpTo(buffer,LIMIT_COLUMN);
+        }
         
-        ili->setFontSize(ili9341::BigFont);
-        sprintf(buffer,"%d",current);
-        ili->setCursor(36,180);
-        ili->printUpTo(buffer,260);
-        
-        ili->setFontSize(ili9341::BigFont);        
-        sprintf(buffer,"%2.2f",voltage);
-        ili->setCursor(36,110);
-        ili->printUpTo(buffer,160);
-        
-        ili->setFontSize(ili9341::SmallFont);        
-        float vbat=(float)output[0];
+        ili->setFontSize(ili9341::SmallFont);  
+
+
+        int ivbat, imaxAmp;
+        runAdc(ivbat, imaxAmp);
+
+
+        float vbat=(float)ivbat;
         vbat=vbat*9;
         vbat/=1000.;      
-        sprintf(buffer,"%2.2f",vbat);
+        sprintf(buffer,"vbat:%2.1f",vbat);
         ili->setCursor(36,235);
-        ili->printUpTo(buffer,160);
-
-        int maxAmp=output[1];
-        maxAmp=maxAmp*maxAmp;
-        maxAmp/=4095;
-        tsk->setMaxCurrent(maxAmp);
-
-        ili->setFontSize(ili9341::SmallFont);
-        sprintf(buffer,"%d",maxAmp);
-        ili->setCursor(36,30);
-        ili->printUpTo(buffer,260);
-
-
-        ili->setFontSize(ili9341::SmallFont);
-        ili->setCursor(180,30);
-        if(cc)
-            ili->printUpTo("--",260);
-        else            
-            ili->printUpTo("CC",260);
-
-
-        lnDigitalToggle(PIN_LED);
-
-        if(!(xround & 3))
+        ili->printUpTo(buffer,140);
+        if(vbat<PS_MIN_VBAT_CRIT)
         {
-            Logger("Inp:%d\n",lnDigitalRead(PIN_SWITCH));
+            stopLowVoltage();
         }
 
-        adc->pollingMultiRead(2,pins,output);   
 
-        xDelay(100);
 
+        int maxAmp=imaxAmp;
+        maxAmp=maxAmp*maxAmp;
+        // 0..4095 -> 0.. 4A amp=val*1.5+50
+        // so max=4000/1.5=2660
+        maxAmp/=6300; // 0..4000
+        maxAmp-=(maxAmp&7);
+        maxAmp+=50;
+
+        if(lastMaxCurrent != maxAmp)
+        {
+            lastMaxCurrent=maxAmp;
+            float d=maxAmp;
+            d/=1.5;
+            d-=25;
+            if(d<0) d=0.;
+            
+            tsk->setMaxCurrent(d);
+
+            ili->setFontSize(ili9341::SmallFont);
+            sprintf(buffer,"maxC:%d",maxAmp);
+            ili->setCursor(180,MAX_C_LINE);
+            ili->printUpTo(buffer,260);
+        }
+    }
+}
+/**
+ * 
+ */
+void stopLowVoltage()
+{
+    tsk->setOutputEnable(false);
+    tsk->setDCEnable(false);
+    ili->setFontSize(ili9341::SmallFont);  
+    ili->setCursor(180,MAX_C_LINE);
+
+    ili->print("LOW VOLTAGE");
+    while(1)
+    {
+        lnDigitalToggle(LN_SYSTEM_LED);    
+        lnDigitalToggle(PIN_LED);
+        xDelay(20);
     }
 }
 

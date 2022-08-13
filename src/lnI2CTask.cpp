@@ -29,16 +29,21 @@ public:
                     void    run();
             virtual float   getVoltage()                {return _voltage;}
             virtual int     getCurrent()                {return _currentMa;}
-            virtual void    setMaxCurrent(int mA)       {_maxCurrentMa=mA;}
             virtual bool    getCCLimited()              {return _currentLimited;}
+
+            virtual void    setMaxCurrent(int mA)       {_newMaxCurrentMa=mA;}
+            virtual void    setDCEnable(bool enable)    {_newDCEnabled=enable;}
+            virtual void    setOutputEnable(bool enable)    {_newOutputEnabled=enable;}
 
 
 protected:
                 bool    _currentLimited;
                 int     _currentMa;
                 int     _maxCurrentMa;
+                int     _newMaxCurrentMa;
                 float   _voltage;
-                uint16_t output[2];
+                bool    _newDCEnabled,_DCEnabled;
+                bool    _newOutputEnabled, _OutputEnabled;
 };
 
 i2cTask *t;
@@ -67,10 +72,13 @@ i2cTask::i2cTask() : xTask("I2C",I2C_TASK_PRIORITY,256)
     
     _currentLimited=false;
     _currentMa=0;
-    _maxCurrentMa=0;
+    _maxCurrentMa=200;
+    _newMaxCurrentMa=201;
     _voltage=0;
-
-
+    _DCEnabled=false;
+    _newDCEnabled=false;
+    _newOutputEnabled=false;
+    _OutputEnabled=false;
      // arbitrer must be created with screen already set up
     // ili must be first
     //
@@ -104,7 +112,7 @@ i2cTask::i2cTask() : xTask("I2C",I2C_TASK_PRIORITY,256)
     // BIT 0 = DC/DC
     // BIT 1 = Enable
 
-    uint8_t data=0xff & ~(PCF8574_DCDC_ENABLE + PCF8574_RELAY_ENABLE);
+    uint8_t data=0xff;
     i2c->write(PCF8574_ADDRESS,1,&data);
     _currentLimited=false;
     start();
@@ -122,26 +130,45 @@ void i2cTask::run()
     while(1)
     {
        
-       xDelay(50);
-        Logger("A\n");
+        xDelay(50); //   The whole sequence lasts ~ 5 ms
+       
         int ma=ina->getCurrent_mA();
         _currentMa=ma;
 
+        // read CC
         uint8_t ovr=0xff;
         i2c->read(PCF8574_ADDRESS,1,&ovr);
-        _currentLimited=!(ovr & PCF8574_CC_MODE);
+        _currentLimited=!!(ovr & PCF8574_CC_MODE);
+        // write DC enable or relay enable
+        int dc=_newDCEnabled;
+        int relay=_newOutputEnabled;
+
+        if(_OutputEnabled!=relay || dc!=_DCEnabled)
+        {
+            _OutputEnabled  = relay;
+            _DCEnabled = dc;
+             uint8_t ovr=0xff;
+            if(_OutputEnabled) 
+                    ovr &= ~PCF8574_RELAY_ENABLE;
+            if(_DCEnabled) 
+                    ovr &= ~PCF8574_DCDC_ENABLE; // active low!
+             i2c->write(PCF8574_ADDRESS,1,&ovr);
+        }
 
         float  f=ina->getVoltage_V();
         if(f<0.) f=0.;
         _voltage=f;
 
-        currentLimiter->setVoltage(_maxCurrentMa);
-       Logger("B\n");
+        // update DAC if it has changed
+
+        int update =_newMaxCurrentMa;
+        if( _maxCurrentMa != update)
+        {
+            _maxCurrentMa = update;
+            currentLimiter->setVoltage(_maxCurrentMa);
+        }
     }
-
 }
-
-
 
 /**
  * 

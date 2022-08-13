@@ -11,6 +11,10 @@ public:
             virtual int     getCurrent()=0;
             virtual void    setMaxCurrent(int mA)=0;
             virtual bool    getCCLimited()=0;
+            virtual void    setDCEnable(bool enable) =0;
+            virtual void    setOutputEnable(bool enable)=0;
+
+            
 
 
 };

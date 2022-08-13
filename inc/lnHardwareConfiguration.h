@@ -16,6 +16,7 @@
 #define PIN_SWITCH          PB9
 
 #define PS_PIN_VBAT         PA0
+#define PS_PIN_MAX_CURRENT  PA1
 #define PS_INTERNAL_RESISTANCE_MILLIOHM 300 // error on voltage is  ~ 50 mV
 
 // IO Expander
@@ -32,3 +33,6 @@
 
 // Tasks 
 #define I2C_TASK_PRIORITY 2
+
+#define PS_MIN_VBAT         15.
+#define PS_MIN_VBAT_CRIT    14.
