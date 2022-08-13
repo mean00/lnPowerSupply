@@ -156,7 +156,10 @@ void loop()
         int   current=tsk->getCurrent();
         bool  cc=tsk->getCCLimited();
 
-       
+        float correction=WIRE_RESISTANCE_MOHM;
+        correction=correction*current;
+        correction/=1000000.;
+        voltage-=correction;
 
         if(voltage!=lastVoltage)
         {

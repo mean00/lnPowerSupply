@@ -34,5 +34,10 @@
 // Tasks 
 #define I2C_TASK_PRIORITY 2
 
-#define PS_MIN_VBAT         15.
-#define PS_MIN_VBAT_CRIT    14.
+
+// VBAT limit
+#define PS_MIN_VBAT         15. // at start
+#define PS_MIN_VBAT_CRIT    14. // anytime
+
+//
+#define WIRE_RESISTANCE_MOHM  220 // wire resistance
