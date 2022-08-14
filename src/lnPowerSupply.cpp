@@ -30,7 +30,7 @@ int   lastCurrent=-1;
 int   lastMaxCurrent=-1;
 int   lastCC=-1;
 
-const utlnPin pins[2]={PS_PIN_VBAT, PS_PIN_MAX_CURRENT};
+const lnPin pins[2]={PS_PIN_VBAT, PS_PIN_MAX_CURRENT};
 
 /**
  * 
