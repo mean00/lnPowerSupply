@@ -110,7 +110,7 @@ ENDIF(LN_ENABLE_USBD)
 #____________________
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/inc)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/assets/fonts)
-GENERATE_GD32_FIRMWARE(lnPowerSupply src/lnPowerSupply.cpp src/lnI2CTask.cpp)
+GENERATE_GD32_FIRMWARE(lnPowerSupply src/lnPowerSupply.cpp src/lnI2CTask.cpp src/lnDisplay.cpp)
 IF(LN_ENABLE_USBD)
     TARGET_LINK_LIBRARIES( lnPowerSupply  gd32_usb_usbd)
 ENDIF()
