@@ -46,24 +46,37 @@ void i2cScanner();
 
 #define ADC_SAMPLE 8
 
+
+bool outputEnabled=false;
+bool newOutputEnabled=false;
+lnI2cTask *tsk;
+
+float lastVoltage=-1;
+int   lastCurrent=-1;
+int   lastMaxCurrent=-1;
+int   lastCC=-1;
+bool  relayEnable=false;
+
+
 /**
  * 
  */
 lnPin pins[2]={PS_PIN_VBAT, PS_PIN_MAX_CURRENT};
 void stopLowVoltage();
+void onOffCallback(lnPin pin, void *cookie);
 void setup()
 {
     Logger("Setuping up Power Supply...\n");
     lnPinMode(LN_SYSTEM_LED,lnOUTPUT);
     lnPinMode(PS_PIN_VBAT,lnADC_MODE);
-    lnPinMode(PA1,lnADC_MODE);
+    lnPinMode(PS_PIN_MAX_CURRENT,lnADC_MODE);
     adc=new lnTimingAdc(0);
     adc->setSource(3,3,1000,2,pins);
 
     lnPinMode(PIN_LED,lnOUTPUT);
     lnPinMode(PIN_SWITCH,lnINPUT_PULLUP);
-
-
+    lnExtiAttachInterrupt(PIN_SWITCH, LN_EDGE_FALLING, onOffCallback, NULL);
+    lnExtiEnableInterrupt(PIN_SWITCH);
   //  i2cScanner();
 
 #define FAST 1
@@ -86,16 +99,14 @@ void setup()
     ili->setFontSize(ili9341::BigFont);
 
    }
-int xround=0;
-int outputEnabled=false;
-lnI2cTask *tsk;
 
-float lastVoltage=-1;
-int   lastCurrent=-1;
-int   lastMaxCurrent=-1;
-int   lastCC=-1;
-bool  relayEnable=false;
-
+/**
+ * 
+ */
+void onOffCallback(lnPin pin, void *cookie)
+{
+    newOutputEnabled^=1;
+}
 /**
  * 
  */
@@ -126,10 +137,10 @@ void loop()
     
     ili->fillScreen(BLACK);
     ili->setFontSize(ili9341::BigFont);            
-    ili->setCursor(4,V_LINE);
-    //ili->printUpTo("V",MAIN_COLUMN);
-    ili->setCursor(4,A_LINE);
-    //ili->printUpTo("mA",MAIN_COLUMN);
+    ili->setCursor(0,V_LINE);
+    ili->printUpTo("V",MAIN_COLUMN);
+    ili->setCursor(0,A_LINE);
+    ili->printUpTo("A",MAIN_COLUMN);
 
     {
         int ivbat, imaxAmp;
@@ -142,19 +153,29 @@ void loop()
             stopLowVoltage();
         }
     }
+
     tsk->setDCEnable(true);
-    tsk->setOutputEnable(true);
+    tsk->setOutputEnable(false);
+    lnDigitalWrite(PIN_LED,false);
 
 
 
    while(1)
    {
-        lnDigitalToggle(LN_SYSTEM_LED);    
-        lnDigitalToggle(PIN_LED);
+        xDelay(10);
+        lnDigitalToggle(LN_SYSTEM_LED);            
 
         float voltage=tsk->getVoltage();
         int   current=tsk->getCurrent();
         bool  cc=tsk->getCCLimited();
+
+
+        if(outputEnabled!=newOutputEnabled)
+        {
+            outputEnabled=newOutputEnabled;
+            lnDigitalWrite(PIN_LED,!outputEnabled);
+            tsk->setOutputEnable(outputEnabled);
+        }
 
         float correction=WIRE_RESISTANCE_MOHM;
         correction=correction*current;
