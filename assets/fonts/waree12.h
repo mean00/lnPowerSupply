@@ -314,7 +314,9 @@ const uint8_t Waree12pt7bBitmaps[] PROGMEM = {
   0x78, 0x84, 0x60, 0x10, 0x33, 0xC8, 0x04, 0x7E, 0x01, 0xFF, 0xE0, 0x4F,
   0xF0, 0x10, 0x00, 0x83, 0xFF, 0x60, 0x10, 0x59, 0xFF, 0xFF, 0xC9, 0x6E,
   0xDE, 0xC2, 0xFF, 0xFF, 0xCD, 0x84, 0x02, 0xFF, 0xE0, 0xA0, 0x04, 0xC8,
-  };
+  0xD5, 0x00, 0x06, 0xFF, 0xFF, 0xFF, 0xF7, 0x41, 0x03, 0x37, 0xA0, 0x40,
+  0x21, 0xBD, 0x08, 0x04, 0x0E, 0xE8, 0x09, 0x10, 0x67, 0x83, 0x3C, 0x19,
+  0xBF, 0xAD, 0x56, 0xAC, 0x80, 0x5D, 0x00, };
 
 const PFXglyph Waree12pt7bGlyphs[] PROGMEM = {
   {     0,   0,   0,   8,    0,    1},   // 0x20 ' ' 
@@ -412,17 +414,18 @@ const PFXglyph Waree12pt7bGlyphs[] PROGMEM = {
   {  3671,   3,  25,   8,    3,  -18},   // 0x7C '|' 
   {  3679,   9,  22,  15,    3,  -17},   // 0x7D '}' 
   {  3723,  16,   5,  20,    2,   -8},   // 0x7E '~' 
+  {  3744,  13,  22,  14,    1,  -17},   // 0x7F '' 
 
 };
 const PFXfont Waree12pt7b PROGMEM = {
   (uint8_t  *)Waree12pt7bBitmaps,
   (PFXglyph *)Waree12pt7bGlyphs,
-  0x20, 0x7E, 39, 
+  0x20, 0x7F, 39, 
   2,1}; // bit per pixel, compression 
 
-// Bitmap uncompressed : about 4519 bytes (5 kBytes)
-// Bitmap output size   : about 3744 bytes (4 kBytes)
+// Bitmap uncompressed : about 4591 bytes (5 kBytes)
+// Bitmap output size   : about 3775 bytes (4 kBytes)
 // compressed size : 82 %
-// Header : about 760 bytes (1 kBytes)
+// Header : about 768 bytes (1 kBytes)
 //--------------------------------------
-// total : about 4528 bytes (5 kBytes)
+// total : about 4567 bytes (5 kBytes)
