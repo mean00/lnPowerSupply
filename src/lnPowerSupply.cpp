@@ -13,9 +13,13 @@
 #define INA_MA_FLOOR 24
 #define ADC_SAMPLE 8
 
+//----------
+
 extern lnI2cTask *createI2cTask();
 void stopLowVoltage();
 void onOffCallback(lnPin pin, void *cookie);
+
+//----------
 
 lnTimingAdc         *adc;
 bool outputEnabled=false;
@@ -25,8 +29,8 @@ float lastVoltage=-1;
 int   lastCurrent=-1;
 int   lastMaxCurrent=-1;
 int   lastCC=-1;
-bool  relayEnable=false;
-lnPin pins[2]={PS_PIN_VBAT, PS_PIN_MAX_CURRENT};
+
+const lnPin pins[2]={PS_PIN_VBAT, PS_PIN_MAX_CURRENT};
 
 /**
  * 
@@ -34,11 +38,14 @@ lnPin pins[2]={PS_PIN_VBAT, PS_PIN_MAX_CURRENT};
 void setup()
 {
     Logger("Setuping up Power Supply...\n");
-    lnPinMode(LN_SYSTEM_LED,lnOUTPUT);
+   
     lnPinMode(PS_PIN_VBAT,lnADC_MODE);
     lnPinMode(PS_PIN_MAX_CURRENT,lnADC_MODE);
+
+    lnPinMode(LN_SYSTEM_LED,lnOUTPUT);
     lnPinMode(PIN_LED,lnOUTPUT);
     lnPinMode(PIN_SWITCH,lnINPUT_PULLUP);
+
     lnExtiAttachInterrupt(PIN_SWITCH, LN_EDGE_FALLING, onOffCallback, NULL);
     lnExtiEnableInterrupt(PIN_SWITCH);
   
@@ -56,9 +63,11 @@ void onOffCallback(lnPin pin, void *cookie)
     lnExtiDisableInterrupt(PIN_SWITCH);
 }
 /**
- * 
+ * \fn runAdc
+ * \brief Average ADC reading over ADC_SAMPLE samples
+ * Convert ADC reading to vbat and maxCurrent (in mA)
  */
-void runAdc(int &vbat, int &maxCurrent)
+void runAdc(float &fvbat, int &maxCurrentSlopped)
 {
     static uint16_t output[ADC_SAMPLE*2];
     adc->multiRead(ADC_SAMPLE,output); 
@@ -69,8 +78,21 @@ void runAdc(int &vbat, int &maxCurrent)
             max0+=*p++;
             max1+=*p++;
     }
+    int vbat, maxCurrent;
     vbat = (max0 + ((ADC_SAMPLE-1)/2))/ADC_SAMPLE;
     maxCurrent = (max1 + ((ADC_SAMPLE-1)/2))/ADC_SAMPLE;
+
+    fvbat=(float)vbat;
+    fvbat=fvbat*9.;
+    fvbat/=1000.;
+    
+    maxCurrent=maxCurrent*maxCurrent;
+    // 0..4095 -> 0.. 4A amp=val*1.5+50
+    // so max=4000/1.5=2660
+    maxCurrent/=6300; // 0..4000
+    maxCurrent-=(maxCurrent&7);
+    maxCurrent+=50;
+    maxCurrentSlopped=maxCurrent;
 }
 /**
  * 
@@ -78,20 +100,15 @@ void runAdc(int &vbat, int &maxCurrent)
 void loop()
 {
     tsk=createI2cTask();
-    xDelay(20); // let it start
+    xDelay(20); // let it start    
+    float vbat;
+    int imaxAmp;
     
-
+    runAdc(vbat, imaxAmp);
+    if(vbat<PS_MIN_VBAT)
     {
-        int ivbat, imaxAmp;
-        runAdc(ivbat, imaxAmp);
-        float vbat=(float)ivbat;
-        vbat=vbat*9;
-        vbat/=1000.;      
-        if(vbat<PS_MIN_VBAT)
-        {
-            stopLowVoltage();
-        }
-    }
+        stopLowVoltage();
+    }    
 
     tsk->setDCEnable(true);
     tsk->setOutputEnable(false); 
@@ -132,37 +149,26 @@ void loop()
             lnDisplay::displayCurrent(current);
         }
 
-        int ivbat, imaxAmp;
-        runAdc(ivbat, imaxAmp);
-
-
-        float vbat=(float)ivbat;
-        vbat=vbat*9;
-        vbat/=1000.;
+       
+        runAdc(vbat, imaxAmp);
         lnDisplay::displayVbat( vbat);
+
         if(vbat<PS_MIN_VBAT_CRIT)
         {
             stopLowVoltage();
         }
 
-        int maxAmp=imaxAmp;
-        maxAmp=maxAmp*maxAmp;
-        // 0..4095 -> 0.. 4A amp=val*1.5+50
-        // so max=4000/1.5=2660
-        maxAmp/=6300; // 0..4000
-        maxAmp-=(maxAmp&7);
-        maxAmp+=50;
 
-        if(lastMaxCurrent != maxAmp)
+        if(lastMaxCurrent != imaxAmp)
         {
-            lastMaxCurrent=maxAmp;
-            float d=maxAmp;
+            lastMaxCurrent=imaxAmp;
+            float d=imaxAmp;
             d/=1.5;
             d-=25;
             if(d<0) d=0.;
             
             tsk->setMaxCurrent(d);
-            lnDisplay::displayMaxCurrent(maxAmp);
+            lnDisplay::displayMaxCurrent(imaxAmp);
         }
     }
 }
