@@ -106,6 +106,7 @@ void setup()
 void onOffCallback(lnPin pin, void *cookie)
 {
     newOutputEnabled^=1;
+    lnExtiDisableInterrupt(PIN_SWITCH);
 }
 /**
  * 
@@ -155,8 +156,8 @@ void loop()
     }
 
     tsk->setDCEnable(true);
-    tsk->setOutputEnable(false);
-    lnDigitalWrite(PIN_LED,false);
+    tsk->setOutputEnable(false); 
+    lnDigitalWrite(PIN_LED,true);
 
 
 
@@ -175,6 +176,8 @@ void loop()
             outputEnabled=newOutputEnabled;
             lnDigitalWrite(PIN_LED,!outputEnabled);
             tsk->setOutputEnable(outputEnabled);
+            xDelay(20);
+            lnExtiEnableInterrupt(PIN_SWITCH);
         }
 
         float correction=WIRE_RESISTANCE_MOHM;
