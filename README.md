@@ -19,5 +19,7 @@ Why go to such a design ?
 You need to have the control part close to the DC/DC
 You need to have the SPI screen AWAY from the control board
 
+[Small Youtube demo ](https://youtu.be/UPAjdyqt5LI)
+
 ![screenshot](assets/web1.jpg?raw=true "front")
 
