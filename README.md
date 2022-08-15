@@ -22,4 +22,5 @@ You need to have the SPI screen AWAY from the control board
 [Small Youtube demo ](https://youtu.be/UPAjdyqt5LI)
 
 ![screenshot](assets/web1.jpg?raw=true "front")
+![screenshot](assets/web2.jpg?raw=true "internal")
 
