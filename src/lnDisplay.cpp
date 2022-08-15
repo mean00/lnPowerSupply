@@ -30,7 +30,7 @@
 #define PW_LINE      180
 #define MAX_C_LINE   210
 #define VBAT_LINE    238
-
+#define UNITS_OFFSET 100
 
 extern const uint8_t dso_resetOff[];
 extern const uint8_t dso_wakeOn[];
@@ -70,15 +70,18 @@ void lnDisplay::init()
     ili->setFontFamily(&SMALLFONT,&MEDFONT,&FONT) ;
 
     ili->setFontSize(ili9341::BigFont);
-    ili->setTextColor(WHITE,BLACK);
+    
     ili->fillScreen(BLACK);
     
-    lcdPrint(lnSpi9341::BigFont, 0, MAIN_COLUMN, V_LINE, "V");
+    ili->setTextColor(YELLOW,BLACK);
+    lcdPrint(lnSpi9341::BigFont,    0,  MAIN_COLUMN, V_LINE, "V");
     lcdPrint(lnSpi9341::MediumFont, 18, MAIN_COLUMN, A_LINE, "A");
-    lcdPrint(lnSpi9341::SmallFont, 18, MAIN_COLUMN, MAX_C_LINE, "Max");
-    lcdPrint(lnSpi9341::MediumFont, 18, MAIN_COLUMN, PW_LINE, "P");
-    
-    
+    lcdPrint(lnSpi9341::SmallFont,  18, MAIN_COLUMN, MAX_C_LINE, "Max");
+    lcdPrint(lnSpi9341::MediumFont, 18, MAIN_COLUMN, PW_LINE, "P");        
+    ili->setTextColor(WHITE,BLACK);
+    lcdPrint(lnSpi9341::MediumFont, LIMIT_COLUMN-UNITS_OFFSET, LIMIT_COLUMN, A_LINE, "mA");
+    lcdPrint(lnSpi9341::MediumFont, LIMIT_COLUMN-UNITS_OFFSET, LIMIT_COLUMN, PW_LINE,"W");        
+
 }
 /**
  * 
@@ -86,7 +89,9 @@ void lnDisplay::init()
  */
 void lnDisplay::displayMaxCurrent(int maxAmp)
 {
-    sprintf(buffer,"%d",maxAmp);
+    float f=maxAmp;
+    f/=1000.;
+    sprintf(buffer,"%2.1fA",f);
     lcdPrint(ili9341::SmallFont, MAIN_COLUMN,LIMIT_COLUMN, MAX_C_LINE, buffer);
 }
 
@@ -107,18 +112,24 @@ void lnDisplay::displayVbat(float vbat)
 /**
  * 
  */
-void lnDisplay::displayPower(float pw)
-{
-    sprintf(buffer,"%2.1f",pw);
-    lcdPrint(ili9341::MediumFont, 200,318, PW_LINE, buffer);
+void lnDisplay::displayCurrent(int ma)
+{    
+    sprintf(buffer,"%d",ma);
+    lcdPrint(ili9341::MediumFont, MAIN_COLUMN,LIMIT_COLUMN-UNITS_OFFSET-MAIN_COLUMN, A_LINE, buffer);
 }
+
 /**
  * 
  */
-void lnDisplay::displayCurrent(int ma)
+static void lnDisplay_float(bool cc, float value, int line)
 {
-    sprintf(buffer,"%d",ma);
-    lcdPrint(ili9341::MediumFont, MAIN_COLUMN,LIMIT_COLUMN, A_LINE, buffer);
+    sprintf(buffer,"%2.2f",value);    
+    if(cc)
+        ili->setTextColor(RED,BLACK);
+    else
+        ili->setTextColor(GREEN,BLACK);    
+    lcdPrint(ili9341::BigFont, MAIN_COLUMN,LIMIT_COLUMN, line, buffer);
+    ili->setTextColor(WHITE,BLACK);    
 }
 
 /**
@@ -126,13 +137,14 @@ void lnDisplay::displayCurrent(int ma)
  */
 void lnDisplay::displayVoltage(bool cc, float voltage)
 {    
-    sprintf(buffer,"%2.2f",voltage);    
-    if(cc)
-        ili->setTextColor(RED,BLACK);
-    else
-        ili->setTextColor(GREEN,BLACK);    
-    lcdPrint(ili9341::BigFont, MAIN_COLUMN,LIMIT_COLUMN, V_LINE, buffer);
-    ili->setTextColor(WHITE,BLACK);
+    lnDisplay_float(cc,voltage,V_LINE);
 }
-
+/**
+ * 
+ */
+void lnDisplay::displayPower(bool cc, float powr)
+{    
+    sprintf(buffer,"%2.1f",powr);
+    lcdPrint(ili9341::MediumFont, MAIN_COLUMN,LIMIT_COLUMN-UNITS_OFFSET-MAIN_COLUMN, PW_LINE, buffer);
+}
 // EOF

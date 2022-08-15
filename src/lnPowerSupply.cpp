@@ -13,22 +13,25 @@
 #define INA_MA_FLOOR 24
 #define ADC_SAMPLE 8
 
+enum otherEvent
+{
+    EnableButtonEvent=128,
+};
+
 //----------
 
-extern lnI2cTask *createI2cTask();
+extern lnI2cTask *createI2cTask(lnI2cTask::signalCb *c);
 void stopLowVoltage();
 void onOffCallback(lnPin pin, void *cookie);
+
+xFastEventGroup *eventGroup;
 
 //----------
 
 lnTimingAdc         *adc;
-bool outputEnabled=false;
-bool newOutputEnabled=false;
-lnI2cTask *tsk;
-float lastVoltage=-1;
-int   lastCurrent=-1;
-int   lastMaxCurrent=-1;
-int   lastCC=-1;
+lnI2cTask           *tsk;
+
+bool                outputEnabled=false;
 
 const lnPin pins[2]={PS_PIN_VBAT, PS_PIN_MAX_CURRENT};
 
@@ -52,6 +55,8 @@ void setup()
     lnDisplay::init();
     adc=new lnTimingAdc(0);
     adc->setSource(3,3,1000,2,pins);
+
+    eventGroup = new xFastEventGroup;
 }
 
 /**
@@ -59,8 +64,9 @@ void setup()
  */
 void onOffCallback(lnPin pin, void *cookie)
 {
-    newOutputEnabled^=1;
+    outputEnabled^=1;    
     lnExtiDisableInterrupt(PIN_SWITCH);
+    eventGroup->setEvents(EnableButtonEvent);
 }
 /**
  * \fn runAdc
@@ -97,12 +103,20 @@ void runAdc(float &fvbat, int &maxCurrentSlopped)
 /**
  * 
  */
+void i2cCb(uint32_t signal)
+{
+    eventGroup->setEvents(signal);
+}
+/**
+ * 
+ */
 void loop()
 {
-    tsk=createI2cTask();
+    eventGroup->takeOwnership();
+    tsk=createI2cTask(i2cCb);
     xDelay(20); // let it start    
     float vbat;
-    int imaxAmp;
+    int imaxAmp, lastMaxCurrent=-1;;
     
     runAdc(vbat, imaxAmp);
     if(vbat<PS_MIN_VBAT)
@@ -116,36 +130,35 @@ void loop()
 
    while(1)
    {
-        xDelay(10);
+        int event=eventGroup->waitEvents(0xfff,100);
         lnDigitalToggle(LN_SYSTEM_LED);            
 
-        float voltage=tsk->getVoltage();
         int   current=tsk->getCurrent();
         bool  cc=tsk->getCCLimited();
 
 
-        if(outputEnabled!=newOutputEnabled)
+        if(event & EnableButtonEvent)
         {
-            outputEnabled=newOutputEnabled;
             lnDigitalWrite(PIN_LED,!outputEnabled);
             tsk->setOutputEnable(outputEnabled);
             xDelay(20);
             lnExtiEnableInterrupt(PIN_SWITCH);
         }
 
-        float correction=WIRE_RESISTANCE_MOHM;
-        correction=correction*current;
-        correction/=1000000.;
-        voltage-=correction;
-
-        if(voltage!=lastVoltage)
+        float voltage=tsk->getVoltage();
+        if(event & (lnI2cTask::VoltageChangeEvent | lnI2cTask::CCChangeEvent | lnI2cTask::CurrentChangeEvent))
         {
-            lastVoltage=voltage;
+            float correction=WIRE_RESISTANCE_MOHM;
+            correction=correction*current;
+            correction/=1000000.;
+            voltage-=correction;
             lnDisplay::displayVoltage( cc,  voltage);
+            float power=voltage*(float)current;
+            power/=1000.;
+            lnDisplay::displayPower( cc,  power);
         }
-        if(lastCurrent!=current)
+        if(event & (lnI2cTask::CurrentChangeEvent))
         {
-            lastCurrent=current;
             lnDisplay::displayCurrent(current);
         }
 
@@ -158,8 +171,9 @@ void loop()
             stopLowVoltage();
         }
 
-
-        if(lastMaxCurrent != imaxAmp)
+        int delta=lastMaxCurrent- imaxAmp;
+        if(delta<0) delta=-delta;
+        if(delta>10)
         {
             lastMaxCurrent=imaxAmp;
             float d=imaxAmp;
