@@ -10,4 +10,5 @@ public:
         static void displayVbat(float vbat);
         static void displayCurrent(int ma);
         static void displayVoltage(bool cc, float voltage);
+        static void displayPower(float pw);
 };

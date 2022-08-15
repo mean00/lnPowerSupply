@@ -9,20 +9,28 @@
 #include "lnDisplay.h"
 
 
-#include "waree36.h"
+
 #include "waree12.h"
 #include "robotoslab.h"
+#include "robotoLight.h"
+#include "roboto12.h"
 
 //#define FONT Waree36pt7b
-#define FONT RobotoSlab_SemiBold48pt7b
-#define SMALLFONT Waree12pt7b
+#define FONT      RobotoSlab_SemiBold48pt7b
+//#define SMALLFONT Waree12pt7b
+#define SMALLFONT Roboto_Light12pt7b
+#define MEDFONT   Roboto_Light28pt7b
 #define FAST 1
 
 #define MAIN_COLUMN  76
 #define LIMIT_COLUMN 318
-#define V_LINE       88
-#define A_LINE       176
-#define MAX_C_LINE   236
+
+#define V_LINE       80
+#define A_LINE       130
+#define PW_LINE      180
+#define MAX_C_LINE   210
+#define VBAT_LINE    238
+
 
 extern const uint8_t dso_resetOff[];
 extern const uint8_t dso_wakeOn[];
@@ -31,6 +39,14 @@ lnSpi9341           *ili;
 hwlnSPIClass        *spi;
 
 static char buffer[64];;
+
+
+static void lcdPrint(lnSpi9341::FontSize size, int colum, int maxColumn, int line, const char *txt)
+{
+    ili->setFontSize(size);
+    ili->setCursor(colum,line);
+    ili->printUpTo(txt,maxColumn);
+}
 
 /**
  * 
@@ -51,16 +67,18 @@ void lnDisplay::init()
     ili->setRotation(1);
     ili->fillScreen(WHITE);   
 
-    ili->setFontFamily(&SMALLFONT,&FONT,&FONT) ;
+    ili->setFontFamily(&SMALLFONT,&MEDFONT,&FONT) ;
+
     ili->setFontSize(ili9341::BigFont);
     ili->setTextColor(WHITE,BLACK);
     ili->fillScreen(BLACK);
     
-    ili->setCursor(0,V_LINE);
-    ili->printUpTo("V",MAIN_COLUMN);
-    ili->setCursor(0,A_LINE);
-    ili->printUpTo("A",MAIN_COLUMN);
-
+    lcdPrint(lnSpi9341::BigFont, 0, MAIN_COLUMN, V_LINE, "V");
+    lcdPrint(lnSpi9341::MediumFont, 18, MAIN_COLUMN, A_LINE, "A");
+    lcdPrint(lnSpi9341::SmallFont, 18, MAIN_COLUMN, MAX_C_LINE, "Max");
+    lcdPrint(lnSpi9341::MediumFont, 18, MAIN_COLUMN, PW_LINE, "P");
+    
+    
 }
 /**
  * 
@@ -68,50 +86,52 @@ void lnDisplay::init()
  */
 void lnDisplay::displayMaxCurrent(int maxAmp)
 {
-    ili->setFontSize(ili9341::SmallFont);
-    sprintf(buffer,"maxC:%d",maxAmp);
-    ili->setCursor(180,MAX_C_LINE);
-    ili->printUpTo(buffer,260);
+    sprintf(buffer,"%d",maxAmp);
+    lcdPrint(ili9341::SmallFont, MAIN_COLUMN,LIMIT_COLUMN, MAX_C_LINE, buffer);
 }
 
 void lnDisplay::banner(const char *msg)
 {
     ili->setFontSize(ili9341::SmallFont);  
     ili->setCursor(180,MAX_C_LINE);
-    ili->print(msg);
+    ili->print(msg);    
 }
 /**
  * 
  */
 void lnDisplay::displayVbat(float vbat)
 {
-    ili->setFontSize(ili9341::SmallFont);  
-    sprintf(buffer,"vbat:%2.1f",vbat);
-    ili->setCursor(36,235);
-    ili->printUpTo(buffer,140);
+    sprintf(buffer,"Bat%2.1f",vbat);
+    lcdPrint(ili9341::SmallFont, 200,318, VBAT_LINE, buffer);
+}
+/**
+ * 
+ */
+void lnDisplay::displayPower(float pw)
+{
+    sprintf(buffer,"%2.1f",pw);
+    lcdPrint(ili9341::MediumFont, 200,318, PW_LINE, buffer);
 }
 /**
  * 
  */
 void lnDisplay::displayCurrent(int ma)
 {
-    ili->setFontSize(ili9341::BigFont);
     sprintf(buffer,"%d",ma);
-    ili->setCursor(MAIN_COLUMN,A_LINE);
-    ili->printUpTo(buffer,LIMIT_COLUMN);
+    lcdPrint(ili9341::MediumFont, MAIN_COLUMN,LIMIT_COLUMN, A_LINE, buffer);
 }
 
 /**
  * 
  */
 void lnDisplay::displayVoltage(bool cc, float voltage)
-{
-    ili->setFontSize(ili9341::BigFont);        
-    sprintf(buffer,"%2.2f",voltage);
-    ili->setCursor(MAIN_COLUMN,V_LINE);
+{    
+    sprintf(buffer,"%2.2f",voltage);    
     if(cc)
         ili->setTextColor(RED,BLACK);
-    ili->printUpTo(buffer,LIMIT_COLUMN);
+    else
+        ili->setTextColor(GREEN,BLACK);    
+    lcdPrint(ili9341::BigFont, MAIN_COLUMN,LIMIT_COLUMN, V_LINE, buffer);
     ili->setTextColor(WHITE,BLACK);
 }
 
