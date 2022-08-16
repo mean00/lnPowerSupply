@@ -10,6 +10,8 @@ You can use pretty much any DC/DC converter as a core, you need to adjust R2 dep
 (see lnPowerSupply.pdf)
 Be careful to stay below ~ 24v else the INA219 will blow.
 
+Formula is ~ R2=400*FB FB=1.25=> R2>500; FB=0.8=>R2>160...
+
 The overal design is made of 3 parts :
 - The DC/DC converter board itself
 - The DC/DC control board, controlled over i2C
