@@ -65,6 +65,7 @@ void lnDisplay::init()
     spi->beginTransaction(transaction);    
     ili->init(dso_resetOff,dso_wakeOn);     
     ili->setRotation(1);
+    ili->enableCache(512);
     ili->fillScreen(WHITE);   
 
     ili->setFontFamily(&SMALLFONT,&MEDFONT,&FONT) ;
@@ -81,6 +82,8 @@ void lnDisplay::init()
     ili->setTextColor(WHITE,BLACK);
     lcdPrint(lnSpi9341::MediumFont, LIMIT_COLUMN-UNITS_OFFSET, LIMIT_COLUMN, A_LINE, "mA");
     lcdPrint(lnSpi9341::MediumFont, LIMIT_COLUMN-UNITS_OFFSET, LIMIT_COLUMN, PW_LINE,"W");        
+
+    //benchmark();
 
 }
 /**
@@ -147,4 +150,22 @@ void lnDisplay::displayPower(bool cc, float powr)
     sprintf(buffer,"%2.1f",powr);
     lcdPrint(ili9341::MediumFont, MAIN_COLUMN,LIMIT_COLUMN-UNITS_OFFSET-MAIN_COLUMN, PW_LINE, buffer);
 }
+/**
+ * 
+ */
+void lnDisplay::benchmark()
+{
+    int rnd=0;
+    int total=0;
+    while(1)
+    {
+         int before=lnGetUs();
+         lcdPrint(ili9341::BigFont, 20,240, 120, "VVVVV");
+         int after=lnGetUs();
+         Logger("Rnd %d : %d us \n",rnd,after-before);
+         rnd++;
+    }
+
+}
+
 // EOF

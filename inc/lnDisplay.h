@@ -11,4 +11,7 @@ public:
         static void displayCurrent(int ma);
         static void displayVoltage(bool cc, float voltage);
         static void displayPower(bool cc,float pw);
+
+
+        static void benchmark();
 };
