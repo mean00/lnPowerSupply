@@ -21,3 +21,6 @@ compile_commands.json
 updat*.*
 kicad/powersupply-backups/*
 kicad/powersupply.kicad_sch-bak
+target
+Cargo.lock
+.cargo
