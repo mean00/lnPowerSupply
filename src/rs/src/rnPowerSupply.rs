@@ -3,27 +3,29 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
-//use lazy_static::lazy_static;
 use rnarduino as rn;
-
-
-//extern "C" {
-  // static mut eventGroup: *mut rn::lnFastEventGroup;
-//}
-
-//static  eventGrp : & 'static   rn::lnFastEventGroup = unsafe { &mut *eventGroup as &mut  rn::lnFastEventGroup  };
-
+/**
+ * 
+ * 
+ */
 extern "C" {
    static mut eventGroup: &'static mut rn::lnFastEventGroup;
 }
 
-
-
+/**
+ * 
+ * 
+ * 
+ */
 #[no_mangle]
 pub extern "C" fn rnLoop() -> ()
 {
    unsafe{
       eventGroup.takeOwnership();
+   }
+   let mut ev : u32 = 0;
+   unsafe{
+   ev = eventGroup.waitEvents( 0xff , 100);
    }
    //tsk=createI2cTask(i2cCb);
    //xDelay(20); // let it start    

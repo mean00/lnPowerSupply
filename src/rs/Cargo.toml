@@ -14,7 +14,7 @@ rnarduino = { path = "../../lnArduino/rust/rnArduino" }
 
 [lib]
 name = "rsPowerSupply"
-path = "src/lib.rs"
+path = "src/rnPowerSupply.rs"
 crate-type = ["staticlib"] # Creates static lib
 
 [profile.dev]
