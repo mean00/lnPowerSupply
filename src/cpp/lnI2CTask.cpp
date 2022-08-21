@@ -218,4 +218,19 @@ void i2cScanner()
     }
 }
 
+#include "i2cTask_shim.h"
+extern i2cTask *tsk;
+float   lnI2cTaskShim::getVoltage() {return tsk->getVoltage();};
+int     lnI2cTaskShim::getCurrent() {return tsk->getCurrent();};
+void    lnI2cTaskShim::setMaxCurrent(int mA) {tsk->setMaxCurrent(mA);};
+bool    lnI2cTaskShim::getCCLimited() {return tsk->getCCLimited();};
+void    lnI2cTaskShim::setDCEnable(bool enable) {tsk->setDCEnable(enable);};
+void    lnI2cTaskShim::setOutputEnable(bool enable) {tsk->setOutputEnable(enable);};
+void    lnI2cTaskShim::setCb(lnI2cTask::signalCb *c) {return tsk->setCb(c);};
+lnI2cTask *shimCreateI2CTask(lnI2cTask::signalCb *c)
+{
+    t=new i2cTask(c);
+    tsk=t;
+    return t;
+}
 //
