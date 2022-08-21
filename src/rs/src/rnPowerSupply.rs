@@ -3,10 +3,18 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 #![allow(unused_doc_comments)]
+#![allow(unused_parens)]
 use cty::c_char;
 use rnarduino as rn;
 
-const ADC_SAMPLE : usize = 8;
+mod display;
+mod i2cTask;
+mod settings;
+
+extern "C" {
+   static mut eventGroup: &'static mut rn::lnFastEventGroup;
+   static mut tsk       : &'static mut i2cTask::lnI2cTask;
+}
 
 /**
  * \brief runTime
@@ -15,8 +23,9 @@ struct runTime
 {
    eventGroup : rn::lnFastEventGroup,
    adc        : rn::lnTimingAdc,
-   output     : [u16; ADC_SAMPLE*2],
+   output     : [u16; settings::ADC_SAMPLE*2],
    pins       : [rn::lnPin; 2] ,   
+   outputEnabled: bool,
 }
 /**
  * 
@@ -29,13 +38,15 @@ impl runTime
     */
    fn new() -> runTime
    {
-      unsafe{
+      unsafe
+      {
       runTime
       {
          eventGroup  :  rn::lnFastEventGroup::new(),
          adc         :  rn::lnTimingAdc::new(0),
          output      :  [0,0,0,0, 0,0,0,0, 0,0,0,0 ,0,0,0,0],
-         pins        :  [rn::PA0 as rn::lnPin,rn::PA1  as rn::lnPin] , // PA0 + PA1
+         pins        :  [settings::PS_PIN_VBAT , settings::PS_PIN_MAX_CURRENT] , // PA0 + PA1
+         outputEnabled: false,
       }
       }
    }
@@ -45,21 +56,111 @@ impl runTime
    fn run(&mut self) -> ()
    {
       unsafe{
-      self.eventGroup.takeOwnership();   
+      self.eventGroup.takeOwnership();         
       self.adc.setSource(3,3,1000,2,self.pins.as_ptr() );
       }
-      
-      loop
-      {   
-         let mut ev : u32 = 0;
-         unsafe{
-         ev = self.eventGroup.waitEvents( 0xff , 100);
-         }
-   
+      let mut lastMaxCurrent : i32 = -1;
+      {
          let mut sbat  : f32=0.;
          let mut maxCurrent : i32=0;
          self.runAdc( &mut sbat, &mut maxCurrent);
-   
+         if(sbat < settings::PS_MIN_VBAT)
+         {
+            runTime::stopLowVoltage()
+         }
+      }
+
+      // !!tsk->setDCEnable(true);
+      // !!tsk->setOutputEnable(false); 
+      unsafe{
+      rn::lnDigitalWrite(settings::PIN_LED,true);
+      };
+  
+
+      loop
+      {   
+         let mut ev : u32 ;
+         unsafe{
+            ev = self.eventGroup.waitEvents( 0xff , 100);         
+            rn::lnDigitalToggle(rn::PC13 as rn::lnPin);    
+         }
+
+         let mut current: i32;
+         let mut cc  : bool;
+         // !!int   current=tsk->getCurrent();
+         // !!bool  cc=tsk->getCCLimited();
+         current=1;
+         cc=false;
+         
+
+         if((ev & settings::EnableButtonEvent)!=0)
+         {
+            unsafe {
+             rn::lnDigitalWrite(settings::PIN_LED,!self.outputEnabled);
+             // !!tsk->setOutputEnable(outputEnabled);            
+             rn::lnDelay(20);
+             rn::lnExtiEnableInterrupt(settings::PIN_SWITCH);
+            }
+         }
+         // !!float voltage=tsk->getVoltage();
+         let mut voltage : f32 = 10.;
+         if((ev & 0x8000)!=0) //(lnI2cTask::VoltageChangeEvent | lnI2cTask::CCChangeEvent | lnI2cTask::CurrentChangeEvent))
+         {
+             let mut correction: f32 =settings::WIRE_RESISTANCE_MOHM as f32;
+             correction=correction*(current as f32);
+             correction/=1000000.;
+             voltage-=correction;
+             unsafe{
+               display::lnDisplay::displayVoltage( cc,  voltage);
+             }
+             let mut power : f32 =voltage*(current as f32);
+             power/=1000.;
+             unsafe{
+               display::lnDisplay::displayPower( cc,  power);
+             }
+         }
+         if((ev & 0x4000) !=0 )//(lnI2cTask::CurrentChangeEvent)) != 0)
+         {
+            unsafe {
+             display::lnDisplay::displayCurrent(current);
+            }
+         }
+ 
+
+
+
+         let mut sbat  : f32=0.;
+         let mut maxCurrent : i32=0;
+         self.runAdc( &mut sbat, &mut maxCurrent);
+         if(sbat < settings::PS_MIN_VBAT_CRIT)
+         {
+            runTime::stopLowVoltage()
+         }
+         unsafe {
+         display::lnDisplay::displayVbat( sbat);
+         }
+
+         let mut delta: i32 =lastMaxCurrent- maxCurrent;
+         if(delta<0) 
+         {
+            delta=-delta;
+         }
+         if(delta>10)
+         {
+             lastMaxCurrent=maxCurrent;
+             let mut d: f32 = maxCurrent as f32;             
+             d/=1.5;
+             d-=25.;
+             if(d<0.)
+             {
+                d=0.;
+             }
+             unsafe 
+             {
+               //tsk.setMaxCurrent(d);             
+               display::lnDisplay::displayMaxCurrent(maxCurrent);
+             }
+         }
          Logger("rust:>\n");
       }  
    }
@@ -70,24 +171,24 @@ impl runTime
    {
       
       unsafe {
-      self.adc.multiRead(ADC_SAMPLE as i32 ,self.output.as_mut_ptr() ); 
+      self.adc.multiRead(settings::ADC_SAMPLE as i32 ,self.output.as_mut_ptr() ); 
       }
        
       let mut max0 : isize =0;
       let mut max1 : isize =0;
       
-      for i in 0..ADC_SAMPLE   {
+      for i in 0..settings::ADC_SAMPLE   {
          max0+=self.output[i+i] as isize;   
          max1+=self.output[i+i+1] as isize;
       }
    
-      let mut vbat : isize =0;
-      let mut maxCurrent : isize = 0;
+      let mut vbat : isize ;
+      let mut maxCurrent : isize ;
        
-       vbat = max0 + ((ADC_SAMPLE-1)/2) as isize;
-       vbat = vbat /(ADC_SAMPLE as isize);
-       maxCurrent = (max1 as isize) + (((ADC_SAMPLE as isize)-1)/2);
-       maxCurrent = maxCurrent/(ADC_SAMPLE as isize);
+       vbat = max0 + ((settings::ADC_SAMPLE-1)/2) as isize;
+       vbat = vbat /(settings::ADC_SAMPLE as isize);
+       maxCurrent = (max1 as isize) + (((settings::ADC_SAMPLE as isize)-1)/2);
+       maxCurrent = maxCurrent/(settings::ADC_SAMPLE as isize);
    
        *fvbat = vbat as f32;    
        *fvbat=*fvbat*9.;
@@ -101,6 +202,24 @@ impl runTime
        maxCurrent+=50;
        *maxCurrentSlopped=maxCurrent as i32;
    }
+   /**
+    *     
+    */
+   fn stopLowVoltage() -> !
+   {
+    //tsk->setOutputEnable(false);
+    //tsk->setDCEnable(false);
+    unsafe {
+    display::lnDisplay::banner("LOW BATTERY" .as_ptr() as *const c_char);    
+    loop
+    {
+        rn::lnDigitalToggle(rn::PC13 as rn::lnPin);    
+        rn::lnDigitalToggle(settings::PIN_LED);
+        rn::lnDelay(20);
+    }
+   }
+   }
+
 }
 /**
  * \fn Logger
