@@ -12,19 +12,24 @@ mod i2cTask;
 mod settings;
 
 extern "C" {
-   static mut eventGroup: &'static mut rn::lnFastEventGroup;
-   static mut tsk       : &'static mut i2cTask::lnI2cTask;
+   //static mut eventGroup: &'static mut rn::lnFastEventGroup;
+   //static mut tsk       : &'static mut i2cTask::lnI2cTask;
 }
+extern "C" {
+static mut runTimeInstance : &'static mut runTime;
+}
+
+
 /**
  * \brief runTime
  */
 struct runTime
 {
-   eventGroup : rn::lnFastEventGroup,
-   adc        : rn::lnTimingAdc,
-   output     : [u16; settings::ADC_SAMPLE*2],
-   pins       : [rn::lnPin; 2] ,   
-   outputEnabled: bool,
+   eventGroup     : rn::lnFastEventGroup,
+   adc            : rn::lnTimingAdc,
+   output         : [u16; settings::ADC_SAMPLE*2],
+   pins           : [rn::lnPin; 2] ,   
+   outputEnabled  : bool,
 }
 /**
  * 
@@ -38,30 +43,45 @@ impl runTime
    fn new() -> runTime
    {
       unsafe {
-      runTime
+      let t : runTime = runTime
       {
          eventGroup  :  rn::lnFastEventGroup::new(),
          adc         :  rn::lnTimingAdc::new(0),
          output      :  [0,0,0,0, 0,0,0,0, 0,0,0,0 ,0,0,0,0],
          pins        :  [settings::PS_PIN_VBAT , settings::PS_PIN_MAX_CURRENT] , // PA0 + PA1
          outputEnabled: false,
+      };
+      
+      
+      t
+      
       }
-     }
    }
-
+   /**
+    * 
+    */
    pub extern "C" fn cb( signal : u32 ) -> ()
    {
-         Logger("CB\n");
+      unsafe{
+      runTimeInstance.eventGroup.setEvents(signal);
+      }
    }
-
+   /**
+    * 
+    */
+   fn onOffCallback(pin: rn::lnPin, cookie: *mut cty::c_void)  -> ()
+   {
+      
+   }
    /**
     * 
     */
    fn run(&mut self) -> ()
-   {
-      //i2cTask::lnI2cTaskShim::shimCreateI2CTask(cb);
+   {      
       unsafe{
-      self.eventGroup.takeOwnership();         
+      self.eventGroup.takeOwnership();    
+   
+
       i2cTask::shimCreateI2CTask(Some(runTime::cb));
       self.adc.setSource(3,3,1000,2,self.pins.as_ptr() );
       }
@@ -257,5 +277,22 @@ pub extern "C" fn rnLoop() -> ()
    let mut r : runTime = runTime::new();
    r.run();
 }
+#[no_mangle]
+pub extern "C" fn rnInit() -> ()
+{
+   Logger("Setuping up Power Supply...\n");
+   unsafe {
+   rn::lnPinMode(settings::PS_PIN_VBAT,rn::GpioMode_lnADC_MODE);
+   rn::lnPinMode(settings::PS_PIN_MAX_CURRENT,rn::GpioMode_lnADC_MODE);
+
+   rn::lnPinMode(rn::PC13 as rn::lnPin,rn::GpioMode_lnOUTPUT);
+   rn::lnPinMode(settings::PIN_LED,rn::GpioMode_lnOUTPUT);
+   rn::lnPinMode(settings::PIN_SWITCH,rn::GpioMode_lnINPUT_PULLUP);
+
+  // !! rn::lnExtiAttachInterrupt(settings::PIN_SWITCH as rn::lnPin, rn::lnEdge_LN_EDGE_FALLING, runTime::onOffCallback, 0 );
+   rn::lnExtiEnableInterrupt(settings::PIN_SWITCH as rn::lnPin);
+   display::lnDisplay::init();
+   }
   
+}
 // EOF
