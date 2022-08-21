@@ -15,7 +15,6 @@ extern "C" {
    static mut eventGroup: &'static mut rn::lnFastEventGroup;
    static mut tsk       : &'static mut i2cTask::lnI2cTask;
 }
-
 /**
  * \brief runTime
  */
@@ -38,8 +37,7 @@ impl runTime
     */
    fn new() -> runTime
    {
-      unsafe
-      {
+      unsafe {
       runTime
       {
          eventGroup  :  rn::lnFastEventGroup::new(),
@@ -48,15 +46,23 @@ impl runTime
          pins        :  [settings::PS_PIN_VBAT , settings::PS_PIN_MAX_CURRENT] , // PA0 + PA1
          outputEnabled: false,
       }
-      }
+     }
    }
+
+   pub extern "C" fn cb( signal : u32 ) -> ()
+   {
+         Logger("CB\n");
+   }
+
    /**
     * 
     */
    fn run(&mut self) -> ()
    {
+      //i2cTask::lnI2cTaskShim::shimCreateI2CTask(cb);
       unsafe{
       self.eventGroup.takeOwnership();         
+      i2cTask::shimCreateI2CTask(Some(runTime::cb));
       self.adc.setSource(3,3,1000,2,self.pins.as_ptr() );
       }
       let mut lastMaxCurrent : i32 = -1;
@@ -70,8 +76,10 @@ impl runTime
          }
       }
 
-      // !!tsk->setDCEnable(true);
-      // !!tsk->setOutputEnable(false); 
+      unsafe {      
+      i2cTask::lnI2cTaskShim::setDCEnable(true);
+      i2cTask::lnI2cTaskShim::setOutputEnable(false); 
+      }
       unsafe{
       rn::lnDigitalWrite(settings::PIN_LED,true);
       };
@@ -87,8 +95,11 @@ impl runTime
 
          let mut current: i32;
          let mut cc  : bool;
-         // !!int   current=tsk->getCurrent();
-         // !!bool  cc=tsk->getCCLimited();
+         let mut voltage : f32;
+         unsafe {
+            current=i2cTask::lnI2cTaskShim::getCurrent();
+            cc=i2cTask::lnI2cTaskShim::getCCLimited();
+         }
          current=1;
          cc=false;
          
@@ -97,14 +108,17 @@ impl runTime
          {
             unsafe {
              rn::lnDigitalWrite(settings::PIN_LED,!self.outputEnabled);
-             // !!tsk->setOutputEnable(outputEnabled);            
+             i2cTask::lnI2cTaskShim::setOutputEnable(self.outputEnabled);            
              rn::lnDelay(20);
              rn::lnExtiEnableInterrupt(settings::PIN_SWITCH);
             }
          }
-         // !!float voltage=tsk->getVoltage();
-         let mut voltage : f32 = 10.;
-         if((ev & 0x8000)!=0) //(lnI2cTask::VoltageChangeEvent | lnI2cTask::CCChangeEvent | lnI2cTask::CurrentChangeEvent))
+         
+         unsafe {
+         voltage=i2cTask::lnI2cTaskShim::getVoltage();
+         }
+         
+         if((ev & (i2cTask::lnI2cTask_SignalChange_VoltageChangeEvent |  i2cTask::lnI2cTask_SignalChange_CCChangeEvent |  i2cTask::lnI2cTask_SignalChange_CurrentChangeEvent  ))!=0)
          {
              let mut correction: f32 =settings::WIRE_RESISTANCE_MOHM as f32;
              correction=correction*(current as f32);
@@ -119,7 +133,7 @@ impl runTime
                display::lnDisplay::displayPower( cc,  power);
              }
          }
-         if((ev & 0x4000) !=0 )//(lnI2cTask::CurrentChangeEvent)) != 0)
+         if((ev & i2cTask::lnI2cTask_SignalChange_CurrentChangeEvent ) !=0 )//(lnI2cTask::CurrentChangeEvent)) != 0)
          {
             unsafe {
              display::lnDisplay::displayCurrent(current);
@@ -157,11 +171,10 @@ impl runTime
              }
              unsafe 
              {
-               //tsk.setMaxCurrent(d);             
+               i2cTask::lnI2cTaskShim::setMaxCurrent(d as i32);             
                display::lnDisplay::displayMaxCurrent(maxCurrent);
              }
          }
-         Logger("rust:>\n");
       }  
    }
    /**
@@ -207,9 +220,9 @@ impl runTime
     */
    fn stopLowVoltage() -> !
    {
-    //tsk->setOutputEnable(false);
-    //tsk->setDCEnable(false);
     unsafe {
+    i2cTask::lnI2cTaskShim::setOutputEnable(false);
+    i2cTask::lnI2cTaskShim::setDCEnable(false);    
     display::lnDisplay::banner("LOW BATTERY" .as_ptr() as *const c_char);    
     loop
     {

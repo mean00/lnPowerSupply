@@ -2550,3 +2550,70 @@ pub const lnI2cTask_SignalChange_CurrentChangeEvent: lnI2cTask_SignalChange = 2;
 pub const lnI2cTask_SignalChange_CCChangeEvent: lnI2cTask_SignalChange = 4;
 pub type lnI2cTask_SignalChange = cty::c_uint;
 pub type lnI2cTask_signalCb = ::core::option::Option<unsafe extern "C" fn(signal: cty::c_ulong)>;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct lnI2cTaskShim {
+    pub _address: u8,
+}
+extern "C" {
+    #[link_name = "\u{1}_ZN13lnI2cTaskShim10getVoltageEv"]
+    pub fn lnI2cTaskShim_getVoltage() -> f32;
+}
+extern "C" {
+    #[link_name = "\u{1}_ZN13lnI2cTaskShim10getCurrentEv"]
+    pub fn lnI2cTaskShim_getCurrent() -> cty::c_int;
+}
+extern "C" {
+    #[link_name = "\u{1}_ZN13lnI2cTaskShim13setMaxCurrentEi"]
+    pub fn lnI2cTaskShim_setMaxCurrent(mA: cty::c_int);
+}
+extern "C" {
+    #[link_name = "\u{1}_ZN13lnI2cTaskShim12getCCLimitedEv"]
+    pub fn lnI2cTaskShim_getCCLimited() -> bool;
+}
+extern "C" {
+    #[link_name = "\u{1}_ZN13lnI2cTaskShim11setDCEnableEb"]
+    pub fn lnI2cTaskShim_setDCEnable(enable: bool);
+}
+extern "C" {
+    #[link_name = "\u{1}_ZN13lnI2cTaskShim15setOutputEnableEb"]
+    pub fn lnI2cTaskShim_setOutputEnable(enable: bool);
+}
+extern "C" {
+    #[link_name = "\u{1}_ZN13lnI2cTaskShim5setCbEPFvmE"]
+    pub fn lnI2cTaskShim_setCb(c: lnI2cTask_signalCb);
+}
+impl lnI2cTaskShim {
+    #[inline]
+    pub unsafe fn getVoltage() -> f32 {
+        lnI2cTaskShim_getVoltage()
+    }
+    #[inline]
+    pub unsafe fn getCurrent() -> cty::c_int {
+        lnI2cTaskShim_getCurrent()
+    }
+    #[inline]
+    pub unsafe fn setMaxCurrent(mA: cty::c_int) {
+        lnI2cTaskShim_setMaxCurrent(mA)
+    }
+    #[inline]
+    pub unsafe fn getCCLimited() -> bool {
+        lnI2cTaskShim_getCCLimited()
+    }
+    #[inline]
+    pub unsafe fn setDCEnable(enable: bool) {
+        lnI2cTaskShim_setDCEnable(enable)
+    }
+    #[inline]
+    pub unsafe fn setOutputEnable(enable: bool) {
+        lnI2cTaskShim_setOutputEnable(enable)
+    }
+    #[inline]
+    pub unsafe fn setCb(c: lnI2cTask_signalCb) {
+        lnI2cTaskShim_setCb(c)
+    }
+}
+extern "C" {
+    #[link_name = "\u{1}_Z17shimCreateI2CTaskPFvmE"]
+    pub fn shimCreateI2CTask(c: lnI2cTask_signalCb) -> *mut lnI2cTask;
+}

@@ -113,9 +113,11 @@ void i2cCb(uint32_t signal)
  extern "C" void rnLoop(void);
 void loop()
 {
+    
     rnLoop();
-    eventGroup->takeOwnership();
     tsk=createI2cTask(i2cCb);
+    eventGroup->takeOwnership();
+  
     xDelay(20); // let it start    
     float vbat;
     int imaxAmp, lastMaxCurrent=-1;;
