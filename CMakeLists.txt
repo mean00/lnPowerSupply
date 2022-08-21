@@ -35,7 +35,7 @@ SET(AF_FOLDER  ${CMAKE_SOURCE_DIR}/lnArduino/)
 include(./mcuSelect.cmake)
 SET(CMAKE_TOOLCHAIN_FILE ${AF_FOLDER}/lnArduino.cmake)
 
-#SET(LN_ENABLE_RUST ON CACHE INTERNAL "")
+SET(LN_ENABLE_RUST ON CACHE INTERNAL "")
 
 PROJECT(lnPowerSupply NONE) # the NONE is very important !
 

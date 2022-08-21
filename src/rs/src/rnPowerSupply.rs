@@ -4,6 +4,10 @@
 #![allow(non_snake_case)]
 #![allow(unused_doc_comments)]
 #![allow(unused_parens)]
+#![allow(unused_variables)]
+#![allow(dead_code)]
+
+
 use cty::c_char;
 use rnarduino as rn;
 
@@ -44,17 +48,14 @@ impl runTime
    {
       unsafe {
       let t : runTime = runTime
-      {
-         eventGroup  :  rn::lnFastEventGroup::new(),
-         adc         :  rn::lnTimingAdc::new(0),
-         output      :  [0,0,0,0, 0,0,0,0, 0,0,0,0 ,0,0,0,0],
-         pins        :  [settings::PS_PIN_VBAT , settings::PS_PIN_MAX_CURRENT] , // PA0 + PA1
-         outputEnabled: false,
-      };
-      
-      
-      t
-      
+         {
+            eventGroup  :  rn::lnFastEventGroup::new(),
+            adc         :  rn::lnTimingAdc::new(0),
+            output      :  [0,0,0,0, 0,0,0,0, 0,0,0,0 ,0,0,0,0],
+            pins        :  [settings::PS_PIN_VBAT , settings::PS_PIN_MAX_CURRENT] , // PA0 + PA1
+            outputEnabled: false,
+         };
+         t      
       }
    }
    /**
@@ -107,22 +108,19 @@ impl runTime
 
       loop
       {   
-         let mut ev : u32 ;
+         let ev : u32 ;
          unsafe{
             ev = self.eventGroup.waitEvents( 0xff , 100);         
-            rn::lnDigitalToggle(rn::PC13 as rn::lnPin);    
+            rn::lnDigitalToggle(rn::lnPin_PC13 );    
          }
 
-         let mut current: i32;
-         let mut cc  : bool;
+         let   current: i32;
+         let   cc  : bool;
          let mut voltage : f32;
          unsafe {
             current=i2cTask::lnI2cTaskShim::getCurrent();
             cc=i2cTask::lnI2cTaskShim::getCCLimited();
-         }
-         current=1;
-         cc=false;
-         
+         }         
 
          if((ev & settings::EnableButtonEvent)!=0)
          {
@@ -160,9 +158,6 @@ impl runTime
             }
          }
  
-
-
-
          let mut sbat  : f32=0.;
          let mut maxCurrent : i32=0;
          self.runAdc( &mut sbat, &mut maxCurrent);
@@ -246,7 +241,7 @@ impl runTime
     display::lnDisplay::banner("LOW BATTERY" .as_ptr() as *const c_char);    
     loop
     {
-        rn::lnDigitalToggle(rn::PC13 as rn::lnPin);    
+        rn::lnDigitalToggle(rn::lnPin_PC13 );    
         rn::lnDigitalToggle(settings::PIN_LED);
         rn::lnDelay(20);
     }
@@ -282,15 +277,15 @@ pub extern "C" fn rnInit() -> ()
 {
    Logger("Setuping up Power Supply...\n");
    unsafe {
-   rn::lnPinMode(settings::PS_PIN_VBAT,rn::GpioMode_lnADC_MODE);
-   rn::lnPinMode(settings::PS_PIN_MAX_CURRENT,rn::GpioMode_lnADC_MODE);
+   rn::lnPinMode(settings::PS_PIN_VBAT          ,rn::GpioMode_lnADC_MODE);
+   rn::lnPinMode(settings::PS_PIN_MAX_CURRENT   ,rn::GpioMode_lnADC_MODE);
 
-   rn::lnPinMode(rn::PC13 as rn::lnPin,rn::GpioMode_lnOUTPUT);
-   rn::lnPinMode(settings::PIN_LED,rn::GpioMode_lnOUTPUT);
-   rn::lnPinMode(settings::PIN_SWITCH,rn::GpioMode_lnINPUT_PULLUP);
+   rn::lnPinMode(rn::lnPin_PC13                 ,rn::GpioMode_lnOUTPUT);
+   rn::lnPinMode(settings::PIN_LED                  ,rn::GpioMode_lnOUTPUT);
+   rn::lnPinMode(settings::PIN_SWITCH               ,rn::GpioMode_lnINPUT_PULLUP);
 
   // !! rn::lnExtiAttachInterrupt(settings::PIN_SWITCH as rn::lnPin, rn::lnEdge_LN_EDGE_FALLING, runTime::onOffCallback, 0 );
-   rn::lnExtiEnableInterrupt(settings::PIN_SWITCH as rn::lnPin);
+   rn::lnExtiEnableInterrupt(settings::PIN_SWITCH);
    display::lnDisplay::init();
    }
   

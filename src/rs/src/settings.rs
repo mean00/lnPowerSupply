@@ -1,4 +1,3 @@
-#![no_std]
 #![allow(non_upper_case_globals)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
@@ -15,15 +14,15 @@ pub const INA_SHUNT_VALUE  : usize =    106;// 106 mOhm;
 
 // screen 
 pub const ILI_SPI_INSTANCE   : usize =  0;
-pub const ILI_PIN_DC         : rn::lnPin =  rn::PA4  as rn::lnPin;
-pub const ILI_PIN_CS         : rn::lnPin =  rn::PB1 as rn::lnPin;
-pub const ILI_PIN_RESET      : rn::lnPin =  rn::PB0 as rn::lnPin;
+pub const ILI_PIN_DC         : rn::lnPin =  rn::lnPin_PA4 ;
+pub const ILI_PIN_CS         : rn::lnPin =  rn::lnPin_PB1 ;
+pub const ILI_PIN_RESET      : rn::lnPin =  rn::lnPin_PB0 ;
 
-pub const PIN_LED            : rn::lnPin =  rn::PA3 as rn::lnPin;
-pub const PIN_SWITCH         : rn::lnPin =  rn::PB9 as rn::lnPin;
+pub const PIN_LED            : rn::lnPin =  rn::lnPin_PA3 ;
+pub const PIN_SWITCH         : rn::lnPin =  rn::lnPin_PB9 ;
 
-pub const PS_PIN_VBAT        : rn::lnPin =  rn::PA0 as rn::lnPin;
-pub const PS_PIN_MAX_CURRENT : rn::lnPin =  rn::PA1 as rn::lnPin;
+pub const PS_PIN_VBAT        : rn::lnPin =  rn::lnPin_PA0 ;
+pub const PS_PIN_MAX_CURRENT : rn::lnPin =  rn::lnPin_PA1 ;
 pub const PS_INTERNAL_RESISTANCE_MILLIOHM : usize = 300; // error on voltage is  ~ 50 mV
 
 // IO Expander
