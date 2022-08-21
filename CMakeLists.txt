@@ -35,7 +35,7 @@ SET(AF_FOLDER  ${CMAKE_SOURCE_DIR}/lnArduino/)
 include(./mcuSelect.cmake)
 SET(CMAKE_TOOLCHAIN_FILE ${AF_FOLDER}/lnArduino.cmake)
 
-SET(LN_ENABLE_RUST ON CACHE INTERNAL "")
+#SET(LN_ENABLE_RUST ON CACHE INTERNAL "")
 
 PROJECT(lnPowerSupply NONE) # the NONE is very important !
 
@@ -113,13 +113,20 @@ ENDIF(LN_ENABLE_USBD)
 #____________________
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/inc)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/assets/fonts)
-add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/src/rs)
+
+IF(LN_ENABLE_RUST)
+    add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/src/rs)
+ENDIF(LN_ENABLE_RUST)    
+
 GENERATE_GD32_FIRMWARE(lnPowerSupply src/cpp/lnPowerSupply.cpp src/cpp/lnI2CTask.cpp src/cpp/lnDisplay.cpp )
 IF(LN_ENABLE_USBD)
     TARGET_LINK_LIBRARIES( lnPowerSupply  gd32_usb_usbd)
 ENDIF()
-TARGET_LINK_LIBRARIES( lnPowerSupply  simplerILI9341 simpler_INA219 simplerMCP4725 ${DSO_EXTRA_LIB} rsPowerSupply )
+TARGET_LINK_LIBRARIES( lnPowerSupply  simplerILI9341 simpler_INA219 simplerMCP4725 ${DSO_EXTRA_LIB} )
 
+IF(LN_ENABLE_RUST)
+    TARGET_LINK_LIBRARIES( lnPowerSupply  rsPowerSupply )
+ENDIF(LN_ENABLE_RUST)
 
 IF(FALSE)
   add_custom_command(TARGET lnPowerSupply

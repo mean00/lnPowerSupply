@@ -17,7 +17,8 @@ enum otherEvent
 {
     EnableButtonEvent=128,
 };
-
+extern "C" void rnLoop(void);
+extern "C" void rnInit(void);
 //----------
 
 extern lnI2cTask *createI2cTask(lnI2cTask::signalCb *c);
@@ -35,11 +36,18 @@ bool                outputEnabled=false;
 
 const lnPin pins[2]={PS_PIN_VBAT, PS_PIN_MAX_CURRENT};
 
+//#define USE_RUST
+
 /**
  * 
  */
 void setup()
 {
+#ifdef USE_RUST
+    rnInit();
+    return;
+#endif    
+    
     Logger("Setuping up Power Supply...\n");
    
     lnPinMode(PS_PIN_VBAT,lnADC_MODE);
@@ -110,11 +118,12 @@ void i2cCb(uint32_t signal)
 /**
  * 
  */
- extern "C" void rnLoop(void);
+ 
 void loop()
 {
-    
+#ifdef USE_RUST    
     rnLoop();
+#endif    
     tsk=createI2cTask(i2cCb);
     eventGroup->takeOwnership();
   
