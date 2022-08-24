@@ -59,7 +59,6 @@ struct runTime
    pins           : [rn::lnPin; 2] ,   
    outputEnabled  : bool,
 }
-
 /**
  * 
  * 
