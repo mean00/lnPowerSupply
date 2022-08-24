@@ -88,7 +88,13 @@ impl runTime
    pub extern "C" fn cb( signal : u32 ,  cookie: *const cty::c_void) -> ()
    {
       unsafe{
-      
+         let p: &mut runTime ;
+         unsafe
+         {      
+            p= unsafe { &mut *(cookie as *mut runTime) };
+         }               
+         p.eventGroup.setEvents(signal);
+         
       }
    }
    /**
@@ -122,11 +128,10 @@ impl runTime
    fn run(&mut self) -> ()
    {      
       unsafe{
-      self.eventGroup.takeOwnership();       
-      i2cTask::shimCreateI2CTask(Some(runTime::cb),0 as *const cty::c_void);
+      self.eventGroup.takeOwnership();             
       self.adc.setSource(3,3,1000,2,self.pins.as_ptr() );
       }
-      let mut lastMaxCurrent : i32 = -1;
+      let mut lastMaxCurrent : i32 = -11;
       {
          let mut sbat  : f32=0.;
          let mut maxCurrent : i32=0;
@@ -255,6 +260,7 @@ impl runTime
        
        vbat = max0 + ((settings::ADC_SAMPLE-1)/2) as isize;
        vbat = vbat /(settings::ADC_SAMPLE as isize);
+
        maxCurrent = (max1 as isize) + (((settings::ADC_SAMPLE as isize)-1)/2);
        maxCurrent = maxCurrent/(settings::ADC_SAMPLE as isize);
    
@@ -318,6 +324,9 @@ pub extern "C" fn rnLoop() -> ()
                Some(runTime::onOffCallback) , 
                ptr as  *mut   cty::c_void) ;
             rn::lnExtiEnableInterrupt(settings::PIN_SWITCH);   
+
+            i2cTask::shimCreateI2CTask(Some(runTime::cb),ptr as *const cty::c_void);
+
             boxed2 = Box::from_raw(ptr);
          }
       boxed2.run();
