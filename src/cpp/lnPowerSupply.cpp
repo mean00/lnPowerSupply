@@ -21,7 +21,7 @@ extern "C" void rnLoop(void);
 extern "C" void rnInit(void);
 //----------
 
-extern lnI2cTask *createI2cTask(lnI2cTask::signalCb *c);
+extern lnI2cTask *createI2cTask(lnI2cTask::signalCb *c, const void *cookie);
 void stopLowVoltage();
 void onOffCallback(lnPin pin, void *cookie);
 
@@ -36,7 +36,7 @@ bool                outputEnabled=false;
 
 const lnPin pins[2]={PS_PIN_VBAT, PS_PIN_MAX_CURRENT};
 
-//#define USE_RUST
+#define USE_RUST
 
 /**
  * 
@@ -111,20 +111,29 @@ void runAdc(float &fvbat, int &maxCurrentSlopped)
 /**
  * 
  */
-void i2cCb(uint32_t signal)
+void i2cCb(uint32_t signal, const void *cookie)
 {
     eventGroup->setEvents(signal);
 }
 /**
  * 
  */
- 
+ void rsTampoline(void *a)
+ {
+    rnLoop();
+    deadEnd(4);
+ }
 void loop()
 {
-#ifdef USE_RUST    
-    rnLoop();
+#ifdef USE_RUST   
+    xTaskCreate(rsTampoline,"rs",1024,NULL,2,NULL);    
+    while(1)
+    {
+        Logger("**\n");
+        lnDelay(1000);
+    }
 #endif    
-    tsk=createI2cTask(i2cCb);
+    tsk=createI2cTask(i2cCb,NULL);
     eventGroup->takeOwnership();
   
     xDelay(20); // let it start    

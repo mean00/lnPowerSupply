@@ -2550,12 +2550,14 @@ pub struct lnI2cTask__bindgen_vtable(cty::c_void);
 pub struct lnI2cTask {
     pub vtable_: *const lnI2cTask__bindgen_vtable,
     pub _cb: lnI2cTask_signalCb,
+    pub _cookie: *const cty::c_void,
 }
 pub const lnI2cTask_SignalChange_VoltageChangeEvent: lnI2cTask_SignalChange = 1;
 pub const lnI2cTask_SignalChange_CurrentChangeEvent: lnI2cTask_SignalChange = 2;
 pub const lnI2cTask_SignalChange_CCChangeEvent: lnI2cTask_SignalChange = 4;
 pub type lnI2cTask_SignalChange = cty::c_uint;
-pub type lnI2cTask_signalCb = ::core::option::Option<unsafe extern "C" fn(signal: cty::c_ulong)>;
+pub type lnI2cTask_signalCb =
+    ::core::option::Option<unsafe extern "C" fn(signal: cty::c_ulong, cookie: *const cty::c_void)>;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct lnI2cTaskShim {
@@ -2586,7 +2588,7 @@ extern "C" {
     pub fn lnI2cTaskShim_setOutputEnable(enable: bool);
 }
 extern "C" {
-    #[link_name = "\u{1}_ZN13lnI2cTaskShim5setCbEPFvmE"]
+    #[link_name = "\u{1}_ZN13lnI2cTaskShim5setCbEPFvmPKvE"]
     pub fn lnI2cTaskShim_setCb(c: lnI2cTask_signalCb);
 }
 impl lnI2cTaskShim {
@@ -2620,6 +2622,6 @@ impl lnI2cTaskShim {
     }
 }
 extern "C" {
-    #[link_name = "\u{1}_Z17shimCreateI2CTaskPFvmE"]
-    pub fn shimCreateI2CTask(c: lnI2cTask_signalCb) -> *mut lnI2cTask;
+    #[link_name = "\u{1}_Z17shimCreateI2CTaskPFvmPKvES0_"]
+    pub fn shimCreateI2CTask(c: lnI2cTask_signalCb, cookie: *const cty::c_void) -> *mut lnI2cTask;
 }

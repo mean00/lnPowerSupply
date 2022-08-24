@@ -12,11 +12,11 @@ public:
                 CCChangeEvent     =4,
             };
 public:
-            typedef void (signalCb)(uint32_t signal);
+            typedef void (signalCb)(uint32_t signal, const void *cookie);
 
                             lnI2cTask(signalCb *c) {_cb=c;}
             virtual         ~lnI2cTask() {} 
-            virtual void    setCb(signalCb *c) {_cb=c;};
+            virtual void    setCb(signalCb *c,const void *cookie) {_cb=c;_cookie=cookie;}
             virtual float   getVoltage()=0;
             virtual int     getCurrent()=0;
             virtual void    setMaxCurrent(int mA)=0;
@@ -25,8 +25,5 @@ public:
             virtual void    setOutputEnable(bool enable)=0;
 public:
             signalCb        *_cb;
-
-            
-
-
+            const void      *_cookie;
 };

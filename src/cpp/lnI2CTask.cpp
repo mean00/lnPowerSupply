@@ -54,9 +54,10 @@ i2cTask *t;
 /**
  * 
  */
-lnI2cTask * createI2cTask(lnI2cTask::signalCb *c)
+lnI2cTask * createI2cTask(lnI2cTask::signalCb *c,const void *cookie)
 {
     t=new i2cTask(c);
+    t->setCb(c,cookie);
     return t;
 }
 /**
@@ -184,7 +185,7 @@ void i2cTask::run()
         if(_accumulated)
         {
             xAssert(_cb);
-            _cb(_accumulated);
+            _cb(_accumulated,_cookie);
         }
     }
 }
@@ -226,10 +227,13 @@ void    lnI2cTaskShim::setMaxCurrent(int mA) {tsk->setMaxCurrent(mA);};
 bool    lnI2cTaskShim::getCCLimited() {return tsk->getCCLimited();};
 void    lnI2cTaskShim::setDCEnable(bool enable) {tsk->setDCEnable(enable);};
 void    lnI2cTaskShim::setOutputEnable(bool enable) {tsk->setOutputEnable(enable);};
-void    lnI2cTaskShim::setCb(lnI2cTask::signalCb *c) {return tsk->setCb(c);};
-lnI2cTask *shimCreateI2CTask(lnI2cTask::signalCb *c)
+/**
+ * 
+ */                        
+lnI2cTask *shimCreateI2CTask(lnI2cTask::signalCb *c,const void *cookie)
 {
     t=new i2cTask(c);
+    t->setCb(c,cookie);
     tsk=t;
     return t;
 }

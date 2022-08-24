@@ -20,6 +20,6 @@ public:
 
 }; 
 
-lnI2cTask *shimCreateI2CTask(lnI2cTask::signalCb *c);
+lnI2cTask *shimCreateI2CTask(lnI2cTask::signalCb *c, const void *cookie);
 
 // EOF

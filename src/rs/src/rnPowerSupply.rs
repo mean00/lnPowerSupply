@@ -6,8 +6,12 @@
 #![allow(unused_parens)]
 #![allow(unused_variables)]
 #![allow(dead_code)]
+#![feature(default_alloc_error_handler)]
 
+use core::alloc::{GlobalAlloc, Layout};
+extern crate alloc;
 
+use alloc::boxed::Box;
 use cty::c_char;
 use rnarduino as rn;
 
@@ -19,9 +23,29 @@ extern "C" {
    //static mut eventGroup: &'static mut rn::lnFastEventGroup;
    //static mut tsk       : &'static mut i2cTask::lnI2cTask;
 }
-extern "C" {
-static mut runTimeInstance : &'static mut runTime;
+
+extern "C"  {pub fn pvPortMalloc(xSize: u32) -> *mut cty::c_void;}
+extern "C"  {pub fn vPortFree(pv: *mut cty::c_void);}
+extern "C"  {pub fn deadEnd(er: i32);}
+
+pub struct FreeRtosAllocator;
+
+
+unsafe impl GlobalAlloc for FreeRtosAllocator {
+   unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+     let res = pvPortMalloc(layout.size() as  cty::c_uint);
+       return res as *mut u8;
+   }
+
+   unsafe fn dealloc(&self, ptr: *mut u8, _layout: Layout) ->() {
+       vPortFree(ptr as  *mut cty::c_void);
+   }
 }
+#[global_allocator] // borrowed from https://github.com/lobaro/FreeRTOS-rust
+static GLOBAL: FreeRtosAllocator = FreeRtosAllocator;
+
+
+
 
 
 /**
@@ -35,6 +59,7 @@ struct runTime
    pins           : [rn::lnPin; 2] ,   
    outputEnabled  : bool,
 }
+
 /**
  * 
  * 
@@ -54,25 +79,43 @@ impl runTime
             output      :  [0,0,0,0, 0,0,0,0, 0,0,0,0 ,0,0,0,0],
             pins        :  [settings::PS_PIN_VBAT , settings::PS_PIN_MAX_CURRENT] , // PA0 + PA1
             outputEnabled: false,
-         };
+         };         
          t      
       }
    }
    /**
     * 
     */
-   pub extern "C" fn cb( signal : u32 ) -> ()
+   pub extern "C" fn cb( signal : u32 ,  cookie: *const cty::c_void) -> ()
    {
       unsafe{
-      runTimeInstance.eventGroup.setEvents(signal);
+      
       }
    }
    /**
     * 
     */
-   fn onOffCallback(pin: rn::lnPin, cookie: *mut cty::c_void)  -> ()
+   fn pushed(&mut self)
    {
-      
+      self.outputEnabled =!self.outputEnabled;
+      unsafe
+      {
+         rn::lnExtiDisableInterrupt(settings::PIN_SWITCH);
+         self.eventGroup.setEvents(settings::EnableButtonEvent);
+      }
+   }
+   /**
+    * 
+    */
+   pub extern "C" fn onOffCallback(pin: rn::lnPin, cookie: *mut cty::c_void)  -> ()
+   {
+      let p: &mut runTime ;
+      unsafe
+      {      
+         p= unsafe { &mut *(cookie as *mut runTime) };
+      }               
+      p.pushed();
+
    }
    /**
     * 
@@ -80,10 +123,8 @@ impl runTime
    fn run(&mut self) -> ()
    {      
       unsafe{
-      self.eventGroup.takeOwnership();    
-   
-
-      i2cTask::shimCreateI2CTask(Some(runTime::cb));
+      self.eventGroup.takeOwnership();       
+      i2cTask::shimCreateI2CTask(Some(runTime::cb),0 as *const cty::c_void);
       self.adc.setSource(3,3,1000,2,self.pins.as_ptr() );
       }
       let mut lastMaxCurrent : i32 = -1;
@@ -269,9 +310,23 @@ fn Logger(st : &str) -> ()
 #[no_mangle]
 pub extern "C" fn rnLoop() -> ()
 {
-   let mut r : runTime = runTime::new();
-   r.run();
+      let mut r : runTime = runTime::new();
+      let mut boxed : Box<runTime> = Box::new(r);
+      let mut boxed2 : Box<runTime>;
+      unsafe {      
+            let ptr = Box::into_raw(boxed);
+            rn::lnExtiAttachInterrupt(settings::PIN_SWITCH , rn::lnEdge_LN_EDGE_FALLING,
+               Some(runTime::onOffCallback) , 
+               ptr as  *mut   cty::c_void) ;
+            rn::lnExtiEnableInterrupt(settings::PIN_SWITCH);   
+            boxed2 = Box::from_raw(ptr);
+         }
+      boxed2.run();
 }
+
+//Box::into_raw(r) as  * mut  cty::c_void); //Box::into_raw(r) as * mut  cty::c_void);
+//Box::into_raw(boxed) as  *const   cty::c_void); //Box::into_raw(r) as * mut  cty::c_void);
+
 #[no_mangle]
 pub extern "C" fn rnInit() -> ()
 {
@@ -284,8 +339,6 @@ pub extern "C" fn rnInit() -> ()
    rn::lnPinMode(settings::PIN_LED                  ,rn::GpioMode_lnOUTPUT);
    rn::lnPinMode(settings::PIN_SWITCH               ,rn::GpioMode_lnINPUT_PULLUP);
 
-  // !! rn::lnExtiAttachInterrupt(settings::PIN_SWITCH as rn::lnPin, rn::lnEdge_LN_EDGE_FALLING, runTime::onOffCallback, 0 );
-   rn::lnExtiEnableInterrupt(settings::PIN_SWITCH);
    display::lnDisplay::init();
    }
   
