@@ -8,10 +8,10 @@
 #![allow(dead_code)]
 #![feature(default_alloc_error_handler)]
 
-use core::alloc::{GlobalAlloc, Layout};
 extern crate alloc;
 
 use alloc::boxed::Box;
+
 use cty::c_char;
 use rnarduino as rn;
 
@@ -23,28 +23,6 @@ extern "C" {
    //static mut eventGroup: &'static mut rn::lnFastEventGroup;
    //static mut tsk       : &'static mut i2cTask::lnI2cTask;
 }
-
-extern "C"  {pub fn pvPortMalloc(xSize: u32) -> *mut cty::c_void;}
-extern "C"  {pub fn vPortFree(pv: *mut cty::c_void);}
-extern "C"  {pub fn deadEnd(er: i32);}
-
-pub struct FreeRtosAllocator;
-
-
-unsafe impl GlobalAlloc for FreeRtosAllocator {
-   unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-     let res = pvPortMalloc(layout.size() as  cty::c_uint);
-       return res as *mut u8;
-   }
-
-   unsafe fn dealloc(&self, ptr: *mut u8, _layout: Layout) ->() {
-       vPortFree(ptr as  *mut cty::c_void);
-   }
-}
-#[global_allocator] // borrowed from https://github.com/lobaro/FreeRTOS-rust
-static GLOBAL: FreeRtosAllocator = FreeRtosAllocator;
-
-
 
 
 
@@ -89,10 +67,7 @@ impl runTime
    {
       unsafe{
          let p: &mut runTime ;
-         unsafe
-         {      
-            p= unsafe { &mut *(cookie as *mut runTime) };
-         }               
+         p=   &mut *(cookie as *mut runTime) ;
          p.eventGroup.setEvents(signal);
          
       }
@@ -115,12 +90,8 @@ impl runTime
    pub extern "C" fn onOffCallback(pin: rn::lnPin, cookie: *mut cty::c_void)  -> ()
    {
       let p: &mut runTime ;
-      unsafe
-      {      
-         p= unsafe { &mut *(cookie as *mut runTime) };
-      }               
+      p= unsafe { &mut *(cookie as *mut runTime) };
       p.pushed();
-
    }
    /**
     * 
@@ -172,7 +143,7 @@ impl runTime
             unsafe {
              rn::lnDigitalWrite(settings::PIN_LED,!self.outputEnabled);
              i2cTask::lnI2cTaskShim::setOutputEnable(self.outputEnabled);            
-             rn::lnDelay(20);
+             rn::lnDelay(30);
              rn::lnExtiEnableInterrupt(settings::PIN_SWITCH);
             }
          }
@@ -315,8 +286,8 @@ fn Logger(st : &str) -> ()
 #[no_mangle]
 pub extern "C" fn rnLoop() -> ()
 {
-      let mut r : runTime = runTime::new();
-      let mut boxed : Box<runTime> = Box::new(r);
+      let r : runTime = runTime::new();
+      let boxed : Box<runTime> = Box::new(r);
       let mut boxed2 : Box<runTime>;
       unsafe {      
             let ptr = Box::into_raw(boxed);
