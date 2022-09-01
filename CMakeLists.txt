@@ -116,9 +116,12 @@ include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/assets/fonts)
 
 IF(LN_ENABLE_RUST)
     add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/src/rs)
+    SET(START_CODE  src/cpp/lnPowerSupply_rust.cpp )
+ELSE(LN_ENABLE_RUST)
+    SET(START_CODE  src/cpp/lnPowerSupply.cpp )
 ENDIF(LN_ENABLE_RUST)    
 
-GENERATE_GD32_FIRMWARE(lnPowerSupply src/cpp/lnPowerSupply.cpp src/cpp/lnI2CTask.cpp src/cpp/lnDisplay.cpp )
+GENERATE_GD32_FIRMWARE(lnPowerSupply ${START_CODE} src/cpp/lnI2CTask.cpp src/cpp/lnDisplay.cpp )
 IF(LN_ENABLE_USBD)
     TARGET_LINK_LIBRARIES( lnPowerSupply  gd32_usb_usbd)
 ENDIF()

@@ -36,17 +36,13 @@ bool                outputEnabled=false;
 
 const lnPin pins[2]={PS_PIN_VBAT, PS_PIN_MAX_CURRENT};
 
-#define USE_RUST
+
 
 /**
  * 
  */
 void setup()
 {
-#ifdef USE_RUST
-    rnInit();
-    return;
-#endif    
     
     Logger("Setuping up Power Supply...\n");
    
@@ -125,14 +121,6 @@ void i2cCb(uint32_t signal, const void *cookie)
  }
 void loop()
 {
-#ifdef USE_RUST   
-    xTaskCreate(rsTampoline,"rs",1024,NULL,2,NULL);    
-    while(1)
-    {
-        Logger("**\n");
-        lnDelay(1000);
-    }
-#endif    
     tsk=createI2cTask(i2cCb,NULL);
     eventGroup->takeOwnership();
   
