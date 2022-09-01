@@ -121,7 +121,7 @@ ELSE(LN_ENABLE_RUST)
     SET(START_CODE  src/cpp/lnPowerSupply.cpp )
 ENDIF(LN_ENABLE_RUST)    
 
-GENERATE_GD32_FIRMWARE(lnPowerSupply ${START_CODE} src/cpp/lnI2CTask.cpp src/cpp/lnDisplay.cpp )
+GENERATE_GD32_FIRMWARE(lnPowerSupply ${START_CODE} src/cpp/lnI2CTask.cpp src/cpp/lnDisplay.cpp lnArduino/src/lnFreeRTOSDebug.cpp )
 IF(LN_ENABLE_USBD)
     TARGET_LINK_LIBRARIES( lnPowerSupply  gd32_usb_usbd)
 ENDIF()
