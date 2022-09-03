@@ -12,7 +12,7 @@ Be careful to stay below ~ 24v else the INA219 will blow.
 
 Formula is ~ R2>420*FB 
  * FB=1.25=> R2>500
- * FB=0.8=>R2>160...
+ * FB=0.8=>  R2>360...
 
 The overal design is made of 3 parts :
 - The DC/DC converter board itself
