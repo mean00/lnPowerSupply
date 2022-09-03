@@ -40,9 +40,6 @@ void setup()
   */
 void loop()
 {
-    // rust does not like globals much, so create it here
-    tsk=createI2cTask(i2cCb,NULL);
-
     xTaskCreate(rsTampoline,"rs",1024,NULL,2,NULL);    
     while(1)
     {

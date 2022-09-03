@@ -42,8 +42,8 @@ pub const I2C_TASK_PRIORITY : usize = 2;
 
 
 // VBAT limit
-pub const PS_MIN_VBAT         : f32 = 15.; // at start
-pub const PS_MIN_VBAT_CRIT    : f32 = 14.; // anytime
+pub const PS_MIN_VBAT         : f32 = 16.; // at start
+pub const PS_MIN_VBAT_CRIT    : f32 = 15.; // anytime
 
 //
 pub const WIRE_RESISTANCE_MOHM  : usize = 220; // wire resistance

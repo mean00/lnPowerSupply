@@ -143,7 +143,7 @@ impl runTime
             unsafe {
              rn::lnDigitalWrite(settings::PIN_LED,!self.outputEnabled);
              i2cTask::lnI2cTaskShim::setOutputEnable(self.outputEnabled);            
-             rn::lnDelay(30);
+             rn::lnDelay(50);
              rn::lnExtiEnableInterrupt(settings::PIN_SWITCH);
             }
          }
