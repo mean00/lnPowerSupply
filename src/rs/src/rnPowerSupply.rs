@@ -127,7 +127,7 @@ impl runTime
          let ev : u32 ;
          unsafe{
             ev = self.eventGroup.waitEvents( 0xff , 100);         
-            rn::lnDigitalToggle(rn::lnPin_PC13 );    
+            rn::lnDigitalToggle(rn::lnPin::PC13 );    
          }
 
          let   current: i32;
@@ -258,7 +258,7 @@ impl runTime
     display::lnDisplay::banner("LOW BATTERY" .as_ptr() as *const c_char);    
     loop
     {
-        rn::lnDigitalToggle(rn::lnPin_PC13 );    
+        rn::lnDigitalToggle(rn::lnPin::PC13 );    
         rn::lnDigitalToggle(settings::PIN_LED);
         rn::lnDelay(20);
     }
@@ -291,7 +291,7 @@ pub extern "C" fn rnLoop() -> ()
       let mut boxed2 : Box<runTime>;
       unsafe {      
             let ptr = Box::into_raw(boxed);
-            rn::lnExtiAttachInterrupt(settings::PIN_SWITCH , rn::lnEdge_LN_EDGE_FALLING,
+            rn::lnExtiAttachInterrupt(settings::PIN_SWITCH , rn::lnEdge::LN_EDGE_FALLING,
                Some(runTime::onOffCallback) , 
                ptr as  *mut   cty::c_void) ;
             rn::lnExtiEnableInterrupt(settings::PIN_SWITCH);   
@@ -314,7 +314,7 @@ pub extern "C" fn rnInit() -> ()
    rn::lnPinMode(settings::PS_PIN_VBAT          ,rn::GpioMode_lnADC_MODE);
    rn::lnPinMode(settings::PS_PIN_MAX_CURRENT   ,rn::GpioMode_lnADC_MODE);
 
-   rn::lnPinMode(rn::lnPin_PC13                 ,rn::GpioMode_lnOUTPUT);
+   rn::lnPinMode(rn::lnPin::PC13                 ,rn::GpioMode_lnOUTPUT);
    rn::lnPinMode(settings::PIN_LED                  ,rn::GpioMode_lnOUTPUT);
    rn::lnPinMode(settings::PIN_SWITCH               ,rn::GpioMode_lnINPUT_PULLUP);
 
