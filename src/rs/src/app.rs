@@ -1,4 +1,3 @@
-#![no_std]
 #![allow(non_upper_case_globals)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
@@ -6,25 +5,16 @@
 #![allow(unused_parens)]
 #![allow(unused_variables)]
 #![allow(dead_code)]
-#![feature(default_alloc_error_handler)]
 
 extern crate alloc;
 
 use alloc::boxed::Box;
-
 use cty::c_char;
 use rnarduino as rn;
 
-mod display;
-mod i2cTask;
-mod settings;
-
-extern "C" {
-   //static mut eventGroup: &'static mut rn::lnFastEventGroup;
-   //static mut tsk       : &'static mut i2cTask::lnI2cTask;
-}
-
-
+use crate::settings;
+use crate::i2cTask;
+use crate::display;
 
 /**
  * \brief runTime
@@ -151,8 +141,8 @@ impl runTime
          unsafe {
          voltage=i2cTask::lnI2cTaskShim::getVoltage();
          }
-         
-         if((ev & (i2cTask::lnI2cTask_SignalChange_VoltageChangeEvent |  i2cTask::lnI2cTask_SignalChange_CCChangeEvent |  i2cTask::lnI2cTask_SignalChange_CurrentChangeEvent  ))!=0)
+         const msk : u32 =  (i2cTask::lnI2cTask_SignalChange::VoltageChangeEvent as u32) +  (i2cTask::lnI2cTask_SignalChange::CCChangeEvent as u32) + ( i2cTask::lnI2cTask_SignalChange::CurrentChangeEvent    as u32);
+         if( (ev & msk)!=0)
          {
              let mut correction: f32 =settings::WIRE_RESISTANCE_MOHM as f32;
              correction=correction*(current as f32);
@@ -167,7 +157,7 @@ impl runTime
                display::lnDisplay::displayPower( cc,  power);
              }
          }
-         if((ev & i2cTask::lnI2cTask_SignalChange_CurrentChangeEvent ) !=0 )//(lnI2cTask::CurrentChangeEvent)) != 0)
+         if((ev & (i2cTask::lnI2cTask_SignalChange::CurrentChangeEvent as u32) ) !=0 )//(lnI2cTask::CurrentChangeEvent)) != 0)
          {
             unsafe {
              display::lnDisplay::displayCurrent(current);
