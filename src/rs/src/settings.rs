@@ -14,15 +14,15 @@ pub const INA_SHUNT_VALUE  : usize =    106;// 106 mOhm;
 
 // screen 
 pub const ILI_SPI_INSTANCE   : usize =  0;
-pub const ILI_PIN_DC         : rn::lnPin =  rn::lnPin::PA4 ;
-pub const ILI_PIN_CS         : rn::lnPin =  rn::lnPin::PB1 ;
-pub const ILI_PIN_RESET      : rn::lnPin =  rn::lnPin::PB0 ;
+pub const ILI_PIN_DC         : rn::rnGPIO::rnPin =  rn::rnGPIO::rnPin::PA4 ;
+pub const ILI_PIN_CS         : rn::rnGPIO::rnPin =  rn::rnGPIO::rnPin::PB1 ;
+pub const ILI_PIN_RESET      : rn::rnGPIO::rnPin =  rn::rnGPIO::rnPin::PB0 ;
 
-pub const PIN_LED            : rn::lnPin =  rn::lnPin::PA3 ;
-pub const PIN_SWITCH         : rn::lnPin =  rn::lnPin::PB9 ;
+pub const PIN_LED            : rn::rnGPIO::rnPin =  rn::rnGPIO::rnPin::PA3 ;
+pub const PIN_SWITCH         : rn::rnGPIO::rnPin =  rn::rnGPIO::rnPin::PB9 ;
 
-pub const PS_PIN_VBAT        : rn::lnPin =  rn::lnPin::PA0 ;
-pub const PS_PIN_MAX_CURRENT : rn::lnPin =  rn::lnPin::PA1 ;
+pub const PS_PIN_VBAT        : rn::rnGPIO::rnPin =  rn::rnGPIO::rnPin::PA0 ;
+pub const PS_PIN_MAX_CURRENT : rn::rnGPIO::rnPin =  rn::rnGPIO::rnPin::PA1 ;
 pub const PS_INTERNAL_RESISTANCE_MILLIOHM : usize = 300; // error on voltage is  ~ 50 mV
 
 // IO Expander
@@ -48,6 +48,7 @@ pub const PS_MIN_VBAT_CRIT    : f32 = 15.; // anytime
 //
 pub const WIRE_RESISTANCE_MOHM  : usize = 220; // wire resistance
 
+pub const INA219_ADDRESS  : u8 = 0x40; //addr: u8,
 pub const INA_MA_FLOOR : usize = 24;
 pub const ADC_SAMPLE : usize = 8;
 
