@@ -1,5 +1,5 @@
 [package]
-name = "rs"
+name = "rsPowerSupply"
 version = "0.1.0"
 edition = "2021"
 
@@ -11,10 +11,9 @@ cty = "0.2.2"
 rnarduino = { path = "../../lnArduino/rust/rnArduino" }
 
 
-
 [lib]
 name = "rsPowerSupply"
-path = "src/rnPowerSupply.rs"
+path = "src/lib.rs"
 crate-type = ["staticlib"] # Creates static lib
 
 [profile.dev]

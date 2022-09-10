@@ -15,6 +15,7 @@ MESSAGE(STATUS "======================")
 # Options
 #____________________
 
+SET(USE_CLANG      ON CACHE INTERNAL "")
 SET(LN_ENABLE_I2C  ON CACHE INTERNAL "")
 SET(LN_ENABLE_SPI  ON CACHE INTERNAL "")
 
