@@ -24,3 +24,4 @@ kicad/powersupply.kicad_sch-bak
 target
 Cargo.lock
 .cargo
+*.tmp
