@@ -18,7 +18,7 @@ use rn::rnExti as rnExti;
 use rn::rnFastEventGroup::rnFastEventGroup as rnFastEventGroup;
 use rn::rnTimingAdc::rnTimingAdc as rnTimingAdc;
 
-
+use rn::rnOsHelper::rnLogger as rnLogger;
 
 use crate::settings;
 use crate::i2cTask;
@@ -47,7 +47,6 @@ impl runTime
     */
    fn new() -> runTime
    {
-      unsafe {
       let t : runTime = runTime
          {
             eventGroup  :  rnFastEventGroup::new(),
@@ -57,7 +56,6 @@ impl runTime
             outputEnabled: false,
          };         
          t      
-      }
    }
    /**
     * 
@@ -77,11 +75,8 @@ impl runTime
    fn pushed(&mut self)
    {
       self.outputEnabled =!self.outputEnabled;
-      unsafe
-      {
-         rnExti::disableInterrupt(settings::PIN_SWITCH);
-         self.eventGroup.setEvents(settings::EnableButtonEvent);
-      }
+      rnExti::disableInterrupt(settings::PIN_SWITCH);
+      self.eventGroup.setEvents(settings::EnableButtonEvent);
    }
    /**
     * 
@@ -99,9 +94,8 @@ impl runTime
    {      
       
       self.eventGroup.takeOwnership();             
-      unsafe{
       self.adc.setSource(3,3,1000,2,self.pins.as_ptr() );
-      }
+      
       let mut lastMaxCurrent : i32 = -11;
       {
          let mut sbat  : f32=0.;
@@ -117,9 +111,7 @@ impl runTime
       i2cTask::lnI2cTaskShim::setDCEnable(true);
       i2cTask::lnI2cTaskShim::setOutputEnable(false); 
       }
-      unsafe{
-         rnGpio::digitalWrite(settings::PIN_LED,true);
-      };
+      rnGpio::digitalWrite(settings::PIN_LED,true);
   
 
       loop
@@ -215,10 +207,7 @@ impl runTime
    fn runAdc(&mut self, fvbat : &mut f32 ,maxCurrentSlopped :  &mut i32 )
    {
       
-      unsafe {
       self.adc.multiRead(settings::ADC_SAMPLE as i32 ,self.output.as_mut_ptr() ); 
-      }
-       
       let mut max0 : isize =0;
       let mut max1 : isize =0;
       
@@ -266,17 +255,6 @@ impl runTime
     }   
    }
 }
-/**
- * \fn Logger
- * \brief simple logger version
- * 
- */
-fn Logger(st : &str) -> ()
-{
-   unsafe{
-     // rn::Logger(st.as_ptr() as *const c_char);
-   }
-}
 
 /**
  * \fn rnLoop
@@ -309,7 +287,7 @@ pub extern "C" fn rnLoop() -> ()
 #[no_mangle]
 pub extern "C" fn rnInit() -> ()
 {
-   Logger("Setuping up Power Supply...\n");
+   rnLogger("Setuping up Power Supply...\n");
    
    rnGpio::pinMode(settings::PS_PIN_VBAT          ,rnGpio::rnGpioMode::lnADC_MODE);
    rnGpio::pinMode(settings::PS_PIN_MAX_CURRENT   ,rnGpio::rnGpioMode::lnADC_MODE);
