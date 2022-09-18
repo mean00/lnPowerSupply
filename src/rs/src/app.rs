@@ -12,19 +12,28 @@ use alloc::boxed::Box;
 use cty::c_char;
 use rnarduino as rn;
 
+use rn::rnGpio as rnGpio;
+use rn::rnGpio::rnPin as rnPin;
+use rn::rnExti as rnExti;
+use rn::rnFastEventGroup::rnFastEventGroup as rnFastEventGroup;
+use rn::rnTimingAdc::rnTimingAdc as rnTimingAdc;
+
+
+
 use crate::settings;
 use crate::i2cTask;
 use crate::display;
+
 
 /**
  * \brief runTime
  */
 struct runTime
 {
-   eventGroup     : rn::lnFastEventGroup,
-   adc            : rn::lnTimingAdc,
+   eventGroup     : rnFastEventGroup,
+   adc            : rnTimingAdc,
    output         : [u16; settings::ADC_SAMPLE*2],
-   pins           : [rn::lnPin; 2] ,   
+   pins           : [rnPin; 2] ,   
    outputEnabled  : bool,
 }
 /**
@@ -41,8 +50,8 @@ impl runTime
       unsafe {
       let t : runTime = runTime
          {
-            eventGroup  :  rn::lnFastEventGroup::new(),
-            adc         :  rn::lnTimingAdc::new(0),
+            eventGroup  :  rnFastEventGroup::new(),
+            adc         :  rnTimingAdc::new(0),
             output      :  [0,0,0,0, 0,0,0,0, 0,0,0,0 ,0,0,0,0],
             pins        :  [settings::PS_PIN_VBAT , settings::PS_PIN_MAX_CURRENT] , // PA0 + PA1
             outputEnabled: false,
@@ -70,14 +79,14 @@ impl runTime
       self.outputEnabled =!self.outputEnabled;
       unsafe
       {
-         rn::lnExtiDisableInterrupt(settings::PIN_SWITCH);
+         rnExti::disableInterrupt(settings::PIN_SWITCH);
          self.eventGroup.setEvents(settings::EnableButtonEvent);
       }
    }
    /**
     * 
     */
-   pub extern "C" fn onOffCallback(pin: rn::lnPin, cookie: *mut cty::c_void)  -> ()
+   pub extern "C" fn onOffCallback(pin: rnPin, cookie: *mut cty::c_void)  -> ()
    {
       let p: &mut runTime ;
       p= unsafe { &mut *(cookie as *mut runTime) };
@@ -88,8 +97,9 @@ impl runTime
     */
    fn run(&mut self) -> ()
    {      
-      unsafe{
+      
       self.eventGroup.takeOwnership();             
+      unsafe{
       self.adc.setSource(3,3,1000,2,self.pins.as_ptr() );
       }
       let mut lastMaxCurrent : i32 = -11;
@@ -108,17 +118,16 @@ impl runTime
       i2cTask::lnI2cTaskShim::setOutputEnable(false); 
       }
       unsafe{
-      rn::lnDigitalWrite(settings::PIN_LED,true);
+         rnGpio::digitalWrite(settings::PIN_LED,true);
       };
   
 
       loop
       {   
          let ev : u32 ;
-         unsafe{
-            ev = self.eventGroup.waitEvents( 0xff , 100);         
-            rn::lnDigitalToggle(rn::lnPin::PC13 );    
-         }
+         
+         ev = self.eventGroup.waitEvents( 0xff , 100);         
+         rnGpio::digitalToggle(rnPin::PC13 );             
 
          let   current: i32;
          let   cc  : bool;
@@ -130,12 +139,14 @@ impl runTime
 
          if((ev & settings::EnableButtonEvent)!=0)
          {
+            
+            rnGpio::digitalWrite(settings::PIN_LED,!self.outputEnabled);
             unsafe {
-             rn::lnDigitalWrite(settings::PIN_LED,!self.outputEnabled);
-             i2cTask::lnI2cTaskShim::setOutputEnable(self.outputEnabled);            
-             rn::lnDelay(50);
-             rn::lnExtiEnableInterrupt(settings::PIN_SWITCH);
+            i2cTask::lnI2cTaskShim::setOutputEnable(self.outputEnabled);            
             }
+            rn::rnOsHelper::rnDelay(50);
+            rnExti::enableInterrupt(settings::PIN_SWITCH);
+            
          }
          
          unsafe {
@@ -246,15 +257,14 @@ impl runTime
     i2cTask::lnI2cTaskShim::setOutputEnable(false);
     i2cTask::lnI2cTaskShim::setDCEnable(false);    
     display::lnDisplay::banner("LOW BATTERY" .as_ptr() as *const c_char);    
+    }
     loop
     {
-        rn::lnDigitalToggle(rn::lnPin::PC13 );    
-        rn::lnDigitalToggle(settings::PIN_LED);
-        rn::lnDelay(20);
-    }
+      rnGpio::digitalToggle(rnPin::PC13 );    
+      rnGpio::digitalToggle(settings::PIN_LED);
+      rn::rnOsHelper::rnDelay(20);
+    }   
    }
-   }
-
 }
 /**
  * \fn Logger
@@ -264,7 +274,7 @@ impl runTime
 fn Logger(st : &str) -> ()
 {
    unsafe{
-      rn::Logger(st.as_ptr() as *const c_char);
+     // rn::Logger(st.as_ptr() as *const c_char);
    }
 }
 
@@ -279,13 +289,13 @@ pub extern "C" fn rnLoop() -> ()
       let r : runTime = runTime::new();
       let boxed : Box<runTime> = Box::new(r);
       let mut boxed2 : Box<runTime>;
-      unsafe {      
-            let ptr = Box::into_raw(boxed);
-            rn::lnExtiAttachInterrupt(settings::PIN_SWITCH , rn::lnEdge::LN_EDGE_FALLING,
-               Some(runTime::onOffCallback) , 
-               ptr as  *mut   cty::c_void) ;
-            rn::lnExtiEnableInterrupt(settings::PIN_SWITCH);   
-
+        
+      let ptr = Box::into_raw(boxed);
+      rnExti::attachInterrupt(settings::PIN_SWITCH , rnExti::rnEdge::LN_EDGE_FALLING,
+         Some(runTime::onOffCallback) , 
+         ptr as  *mut   cty::c_void) ;
+      rnExti::enableInterrupt(settings::PIN_SWITCH);   
+      unsafe {    
             i2cTask::shimCreateI2CTask(Some(runTime::cb),ptr as *const cty::c_void);
 
             boxed2 = Box::from_raw(ptr);
@@ -300,16 +310,15 @@ pub extern "C" fn rnLoop() -> ()
 pub extern "C" fn rnInit() -> ()
 {
    Logger("Setuping up Power Supply...\n");
+   
+   rnGpio::pinMode(settings::PS_PIN_VBAT          ,rnGpio::rnGpioMode::lnADC_MODE);
+   rnGpio::pinMode(settings::PS_PIN_MAX_CURRENT   ,rnGpio::rnGpioMode::lnADC_MODE);
+   rnGpio::pinMode(rnPin::PC13                    ,rnGpio::rnGpioMode::lnOUTPUT);
+   rnGpio::pinMode(settings::PIN_LED              ,rnGpio::rnGpioMode::lnOUTPUT);
+   rnGpio::pinMode(settings::PIN_SWITCH           ,rnGpio::rnGpioMode::lnINPUT_PULLDOWN);
+
    unsafe {
-   rn::lnPinMode(settings::PS_PIN_VBAT          ,rn::GpioMode_lnADC_MODE);
-   rn::lnPinMode(settings::PS_PIN_MAX_CURRENT   ,rn::GpioMode_lnADC_MODE);
-
-   rn::lnPinMode(rn::lnPin::PC13                 ,rn::GpioMode_lnOUTPUT);
-   rn::lnPinMode(settings::PIN_LED                  ,rn::GpioMode_lnOUTPUT);
-   rn::lnPinMode(settings::PIN_SWITCH               ,rn::GpioMode_lnINPUT_PULLUP);
-
    display::lnDisplay::init();
    }
-  
 }
 // EOF
