@@ -62,12 +62,9 @@ impl runTime
     */
    pub extern "C" fn cb( signal : u32 ,  cookie: *const cty::c_void) -> ()
    {
-      unsafe{
-         let p: &mut runTime ;
-         p=   &mut *(cookie as *mut runTime) ;
-         p.eventGroup.setEvents(signal);
-         
-      }
+      
+         let p: &mut runTime =  unsafe{  &mut *(cookie as *mut runTime) };
+         p.eventGroup.setEvents(signal);         
    }
    /**
     * 
@@ -103,14 +100,13 @@ impl runTime
          self.runAdc( &mut sbat, &mut maxCurrent);
          if(sbat < settings::PS_MIN_VBAT)
          {
-            runTime::stopLowVoltage()
+            stopLowVoltage()
          }
       }
+      
+      setDCEnable(true);
+      setOutputEnable(false); 
 
-      unsafe {      
-      i2cTask::lnI2cTaskShim::setDCEnable(true);
-      i2cTask::lnI2cTaskShim::setOutputEnable(false); 
-      }
       rnGpio::digitalWrite(settings::PIN_LED,true);
   
 
@@ -124,26 +120,21 @@ impl runTime
          let   current: i32;
          let   cc  : bool;
          let mut voltage : f32;
-         unsafe {
-            current=i2cTask::lnI2cTaskShim::getCurrent();
-            cc=i2cTask::lnI2cTaskShim::getCCLimited();
-         }         
-
+         current=getCurrent();
+         cc=getCCLimited();
          if((ev & settings::EnableButtonEvent)!=0)
          {
             
             rnGpio::digitalWrite(settings::PIN_LED,!self.outputEnabled);
-            unsafe {
-            i2cTask::lnI2cTaskShim::setOutputEnable(self.outputEnabled);            
-            }
+            setOutputEnable(self.outputEnabled);            
+
             rn::rnOsHelper::rnDelay(50);
             rnExti::enableInterrupt(settings::PIN_SWITCH);
             
          }
          
-         unsafe {
-         voltage=i2cTask::lnI2cTaskShim::getVoltage();
-         }
+         voltage=getVoltage();
+         
          const msk : u32 =  (i2cTask::lnI2cTask_SignalChange::VoltageChangeEvent as u32) +  (i2cTask::lnI2cTask_SignalChange::CCChangeEvent as u32) + ( i2cTask::lnI2cTask_SignalChange::CurrentChangeEvent    as u32);
          if( (ev & msk)!=0)
          {
@@ -172,7 +163,7 @@ impl runTime
          self.runAdc( &mut sbat, &mut maxCurrent);
          if(sbat < settings::PS_MIN_VBAT_CRIT)
          {
-            runTime::stopLowVoltage()
+            stopLowVoltage()
          }
          unsafe {
          display::lnDisplay::displayVbat( sbat);
@@ -193,9 +184,8 @@ impl runTime
              {
                 d=0.;
              }
-             unsafe 
-             {
-               i2cTask::lnI2cTaskShim::setMaxCurrent(d as i32);             
+             setMaxCurrent(d as i32);
+             unsafe{
                display::lnDisplay::displayMaxCurrent(maxCurrent);
              }
          }
@@ -237,25 +227,82 @@ impl runTime
        maxCurrent+=50;
        *maxCurrentSlopped=maxCurrent as i32;
    }
-   /**
-    *     
-    */
-   fn stopLowVoltage() -> !
+
+  
+}
+///
+/// 
+/// 
+fn setOutputEnable(enable: bool) -> ()
+{
+   unsafe {
+      i2cTask::lnI2cTaskShim::setOutputEnable(enable);
+   }
+}
+///
+/// 
+/// 
+/// 
+fn setDCEnable(enable: bool) -> ()
+{
+   unsafe {
+      i2cTask::lnI2cTaskShim::setDCEnable(enable);
+   }
+}
+///
+/// 
+/// 
+fn stopLowVoltage() -> !
+{    
+   setOutputEnable(false);    
+   setDCEnable(false);    
+   unsafe {
+      display::lnDisplay::banner("LOW BATTERY" .as_ptr() as *const c_char);    
+   }
+   loop
    {
-    unsafe {
-    i2cTask::lnI2cTaskShim::setOutputEnable(false);
-    i2cTask::lnI2cTaskShim::setDCEnable(false);    
-    display::lnDisplay::banner("LOW BATTERY" .as_ptr() as *const c_char);    
-    }
-    loop
-    {
       rnGpio::digitalToggle(rnPin::PC13 );    
       rnGpio::digitalToggle(settings::PIN_LED);
       rn::rnOsHelper::rnDelay(20);
-    }   
+   }   
+}
+///
+/// 
+/// 
+/// 
+fn getCurrent() -> i32
+{
+   unsafe{
+   return i2cTask::lnI2cTaskShim::getCurrent() as i32;
    }
 }
-
+///
+/// 
+///    
+fn getCCLimited() -> bool 
+{
+   unsafe {
+      i2cTask::lnI2cTaskShim::getCCLimited()
+   }
+}
+///
+/// 
+/// 
+fn getVoltage() -> f32
+{
+   unsafe {
+       return i2cTask::lnI2cTaskShim::getVoltage();
+   }
+}
+///
+/// 
+/// 
+fn setMaxCurrent(max : i32) -> ()
+{
+   unsafe{
+   i2cTask::lnI2cTaskShim::setMaxCurrent(max);
+   }
+}
 /**
  * \fn rnLoop
  * 
@@ -296,7 +343,7 @@ pub extern "C" fn rnInit() -> ()
    rnGpio::pinMode(settings::PIN_SWITCH           ,rnGpio::rnGpioMode::lnINPUT_PULLDOWN);
 
    unsafe {
-   display::lnDisplay::init();
+      display::lnDisplay::init();
    }
 }
 // EOF
