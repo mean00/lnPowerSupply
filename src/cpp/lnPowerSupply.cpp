@@ -114,11 +114,6 @@ void i2cCb(uint32_t signal, const void *cookie)
 /**
  * 
  */
- void rsTampoline(void *a)
- {
-    rnLoop();
-    deadEnd(4);
- }
 void loop()
 {
     tsk=createI2cTask(i2cCb,NULL);
