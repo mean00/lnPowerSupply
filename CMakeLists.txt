@@ -16,6 +16,7 @@ MESSAGE(STATUS "======================")
 #____________________
 
 SET(USE_CLANG      ON CACHE INTERNAL "")
+SET(LN_ENABLE_RUST ON CACHE INTERNAL "")
 SET(LN_ENABLE_I2C  ON CACHE INTERNAL "")
 SET(LN_ENABLE_SPI  ON CACHE INTERNAL "")
 
@@ -36,7 +37,7 @@ SET(AF_FOLDER  ${CMAKE_SOURCE_DIR}/lnArduino/)
 include(./mcuSelect.cmake)
 SET(CMAKE_TOOLCHAIN_FILE ${AF_FOLDER}/lnArduino.cmake)
 
-SET(LN_ENABLE_RUST ON CACHE INTERNAL "")
+
 
 PROJECT(lnPowerSupply NONE) # the NONE is very important !
 
@@ -132,15 +133,7 @@ IF(LN_ENABLE_RUST)
     TARGET_LINK_LIBRARIES( lnPowerSupply  rsPowerSupply )
 ENDIF(LN_ENABLE_RUST)
 
-IF(FALSE)
-  add_custom_command(TARGET lnPowerSupply
-                   POST_BUILD
-                   COMMAND ${CMAKE_OBJCOPY} -Obinary $<TARGET_FILE:lnDSO> $<TARGET_FILE:lnDSO>.tmp
-                   COMMAND python3 ${CMAKE_SOURCE_DIR}/lnDsoChecksum.py  $<TARGET_FILE:lnDSO>.tmp $<TARGET_FILE:lnDSO>.checksumed.bin
-                   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-                   COMMENT "Generating checksumed bin file"
-    )
-ENDIF(FALSE)
+
 
 
 # Summary
