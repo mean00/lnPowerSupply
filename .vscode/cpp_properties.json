@@ -1,0 +1,15 @@
+{
+        "configuration" : [
+                {
+                        "includepath" : [
+                                "${workspaceFolder}/lnArduino/include",
+                                "/opt/llvm_arm/14/lib/clang-runtimes/armv7m_soft_nofp/include/",
+                                "/home/fx/Arduino_gd32/lnPowerSupply_rust/lnArduino/include"
+
+                        ], 
+                        "defines" : [
+                                "__CC_ARM"
+                        ]
+                }
+        ]
+}

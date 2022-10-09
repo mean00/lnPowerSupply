@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "*.txt": "cmake",
+        "memory_resource": "cpp",
+        "ostream": "cpp",
+        "streambuf": "cpp"
+    }
+}
