@@ -51,7 +51,7 @@ impl runTime
          {
             eventGroup  :  rnFastEventGroup::new(),
             adc         :  rnTimingAdc::new(0),
-            output      :  [0,0,0,0, 0,0,0,0, 0,0,0,0 ,0,0,0,0],
+            output      :  [0;16],
             pins        :  [settings::PS_PIN_VBAT , settings::PS_PIN_MAX_CURRENT] , // PA0 + PA1
             outputEnabled: false,
          };         
@@ -88,11 +88,13 @@ impl runTime
     * 
     */
    fn run(&mut self) -> ()
-   {      
-      
+   {            
       self.eventGroup.takeOwnership();             
       self.adc.setSource(3,3,1000,2,self.pins.as_ptr() );
       
+      //---
+      // Check we are not in low battery mode from the start
+      //---
       let mut lastMaxCurrent : i32 = -11;
       {
          let mut sbat  : f32=0.;
@@ -123,18 +125,17 @@ impl runTime
          current=getCurrent();
          cc=getCCLimited();
          if((ev & settings::EnableButtonEvent)!=0)
-         {
-            
+         {            
             rnGpio::digitalWrite(settings::PIN_LED,!self.outputEnabled);
             setOutputEnable(self.outputEnabled);            
 
-            rn::rnOsHelper::rnDelay(50);
+            rn::rnOsHelper::rnDelay(50); // dumb anti bounce
             rnExti::enableInterrupt(settings::PIN_SWITCH);
             
          }
          
          voltage=getVoltage();
-         
+         // Display voltage & current
          const msk : u32 =  (i2cTask::lnI2cTask_SignalChange::VoltageChangeEvent as u32) +  (i2cTask::lnI2cTask_SignalChange::CCChangeEvent as u32) + ( i2cTask::lnI2cTask_SignalChange::CurrentChangeEvent    as u32);
          if( (ev & msk)!=0)
          {
@@ -168,7 +169,7 @@ impl runTime
          unsafe {
          display::lnDisplay::displayVbat( sbat);
          }
-
+         // manage current Limiting
          let mut delta: i32 =lastMaxCurrent- maxCurrent;
          if(delta<0) 
          {
