@@ -4,11 +4,21 @@
                         "includepath" : [
                                 "${workspaceFolder}/lnArduino/include",
                                 "/opt/llvm_arm/14/lib/clang-runtimes/armv7m_soft_nofp/include/",
-                                "/home/fx/Arduino_gd32/lnPowerSupply_rust/lnArduino/include"
+                                "/home/fx/Arduino_gd32/lnPowerSupply_rust/lnArduino/include/"
 
                         ], 
                         "defines" : [
-                                "__CC_ARM"
+                                "__CC_ARM",
+                                "__GNU__",
+                                "__arm__",
+                                "__thumb__",
+                                "___int32_t_defined",
+                                "___int16_t_defined",
+                                "___int8_t_defined",                                
+                                "__UINT8_TYPE__=char",
+                                "__INT8_TYPE__=char",
+                                "__UINT16_TYPE__=short unsigned int"
+                                ],
                         ]
                 }
         ]
