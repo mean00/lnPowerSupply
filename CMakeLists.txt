@@ -4,7 +4,7 @@
 # An opensource firmware for the DSO SHELL 150
 # With optional hardware mods :
 #   - Alternative rotary encoder wiring : MUCH Better, almost mandatory
-#
+# cpp -> 63.4 k
 #-----------------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.0)
@@ -90,10 +90,10 @@ ELSE()
   SET(SIMPLER_ILI9341_2BPP_SUPPORT     ON CACHE INTERNAL "")
   SET(SIMPLER_ILI9341_4BPP_SUPPORT     ON CACHE INTERNAL "")
 ENDIF()
-include_directories(externals/simplerILI9341/platformExample/lnArduino)
+include_directories(externals/simplerILI9341/cpp/platformExample/lnArduino)
 SET(ILI9341_DRIVER  platformExample/lnArduino/ili_lnSpi.cpp)
-ADD_SUBDIRECTORY(externals/simplerILI9341)
-include_directories(externals/simplerILI9341)
+ADD_SUBDIRECTORY(externals/simplerILI9341/cpp)
+include_directories(externals/simplerILI9341/cpp)
 #
 
 ADD_SUBDIRECTORY(externals/simpler_INA219)
