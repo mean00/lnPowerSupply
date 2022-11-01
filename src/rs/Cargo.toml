@@ -9,8 +9,8 @@ edition = "2021"
 [dependencies]
 cty = "0.2.2"
 rnarduino = { path = "../../lnArduino/rust/rnArduino" }
-#heatshrink_byte= {git = "https://github.com/mean00/heatshrink.git" }
-#ina219 = { git = "https://github.com/youduda/ina219.git"}
+ili9341 = { path = "../../externals/simplerILI9341/rust/ili9341", features =["hs"]}
+
 
 [lib]
 name = "rsPowerSupply"
