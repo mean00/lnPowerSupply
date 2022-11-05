@@ -1,5 +1,8 @@
 #![allow(non_camel_case_types)]
 #![allow(unused_imports)]
+use ufmt::{derive::uDebug, uDebug, uWrite, uwrite, uwriteln, Formatter};
+use core::str;
+use heapless::String;
 
 const SCREEN_WIDTH      : u32 = 320;
 const SCREEN_HEIGHT     : u32 = 240;
@@ -29,22 +32,27 @@ use rnarduino::rnSpi::rnSPISettings;
 use ili9341::ili9341::Ili9341 as Ili9341;
 use lnspi_ili9341::spi_ili9341 as spi_ili9341;
 use ili9341::colors::{WHITE,BLACK,RED,GREEN,BLUE};
-//use ili9341::ili9341::FontFamily;
+
 use ili9341::ili9341::FontFamily as FontFamily;
 use ili9341::ili9341::FontFamily::{BigFont,SmallFont,MediumFont};
 extern crate alloc;
 
 use alloc::boxed::Box;
 use ili9341::ili9341_init_sequence::{DSO_RESET,DSO_WAKEUP};
-// donts
-use crate::waree12::Waree12pt7b as Waree12pt7b;
+// fonts
+use crate::waree12::Waree12pt7b                     as small_font;
+use crate::robotoLight28::Roboto_Light28pt7b        as med_font;
+use crate::robotoslab48::RobotoSlab_SemiBold48pt7b  as big_font;
+
+
 
 const FAST : u32 = 1;
 
 pub struct  lnDisplay2 <'a>
 {
-    ili :    Box<Ili9341<'a>> ,
-    buffer : [u8;128], 
+    ili         :    Box<Ili9341<'a>> ,
+    buffer      : [u8;128], 
+    string_buf  : heapless::String<64>,
 }
 
 impl  lnDisplay2  <'_>
@@ -73,18 +81,27 @@ impl  lnDisplay2  <'_>
 
          lnDisplay2
          {
+            // Roboto_Light12pt7b
+            // Roboto_Light28pt7b
+            // RobotoSlab_SemiBold48pt7b
             
-            ili     :  Ili9341::new(240,320, 
+            ili         :  Ili9341::new(240,320, 
                                     ili_access, 
-                                    &Waree12pt7b, &Waree12pt7b ,&Waree12pt7b),
-            buffer  : [0;128],
+                                    &small_font, &med_font ,&big_font),
+            buffer      : [0;128],
+            string_buf  :  String::new(),
          }         
     }
     
     pub  fn display_max_current(&mut self,currentMa: usize) {
         
     }
-    
+    fn sprintf_f(&mut self, fmt : &str, value : f32) -> &str
+    {
+        //return core::str::from_utf8(&self.buffer).unwrap();
+        let s : &str = &"foo";
+        s
+    }
     pub  fn banner(&mut self,msg: &str) {
         self.ili.set_font_size(SmallFont);  
         self.ili.print(180,MAX_C_LINE,msg);    
@@ -92,15 +109,21 @@ impl  lnDisplay2  <'_>
     }
     
     pub  fn display_Vbat(&mut self,vbat: f32) {
-        let str = "Bat:"; //sprintf(buffer,"Bat%2.1f",vbat);
-        self.lcd_print(SmallFont, 200,318, VBAT_LINE, str);
+        
+        
+        let up = vbat as usize;
+        let down = ((vbat - (up as f32))*10.) as usize;
+        uwrite!(&mut self.string_buf, "Bat:{}.{}",up,down).unwrap();
+
+        self.lcd_print(SmallFont, 200,318, VBAT_LINE, self.string_buf.as_str());
     
     }
     
     pub  fn display_current(&mut self,ma: usize) {
         //sprintf(buffer,"%d",ma);
-        let str="11";
-        self.lcd_print(MediumFont, MAIN_COLUMN,LIMIT_COLUMN-UNITS_OFFSET-MAIN_COLUMN, A_LINE, str);
+        let mut s : heapless::String<64> = String::new();
+        uwrite!(&mut s, "{}",ma).unwrap();
+        self.lcd_print(MediumFont, MAIN_COLUMN,LIMIT_COLUMN-UNITS_OFFSET-MAIN_COLUMN, A_LINE, s.as_str());
     
     }
     
@@ -111,19 +134,25 @@ impl  lnDisplay2  <'_>
     
     pub  fn display_power(&mut self, cc: bool, pw: f32) {
         //sprintf(buffer,"%2.1f",powr);
-        let str="000";
-        self.lcd_print(MediumFont, MAIN_COLUMN,LIMIT_COLUMN-UNITS_OFFSET-MAIN_COLUMN, PW_LINE, str);
+        let mut s : heapless::String<64> = String::new();
+        let up = pw as usize;
+        let down = ((pw - (up as f32))*10.) as usize;
+        uwrite!(&mut s, "{}.{}",up,down).unwrap();
+        self.lcd_print(MediumFont, MAIN_COLUMN,LIMIT_COLUMN-UNITS_OFFSET-MAIN_COLUMN, PW_LINE, s.as_str());
     
     }
     fn lcd_print(&mut self, size : FontFamily,  column : usize ,  maxColumn : usize , line : usize , txt : &str)
     {
         self.ili.set_font_size(size);
-        //self.ili.set_cursor(colum,line);
-     //   self.ili.printUpTo(txt,maxColumn);
         self.ili.print(column,line,txt);
     }
     fn display_float(&mut self, cc : bool ,  value: f32,  line : usize)
     {
+        let mut s : heapless::String<64> = String::new();
+        let up = value as usize;
+        let down = ((value - (up as f32))*100.) as usize;
+        uwrite!(&mut s, "{}.{}",up,down).unwrap();
+
       //  sprintf(self.buffer,"%2.2f",value);    
         if cc
         {
@@ -133,9 +162,8 @@ impl  lnDisplay2  <'_>
         {
             self.ili.set_text_color(GREEN,BLACK); 
         }
-        //self.lcd_print(BigFont, MAIN_COLUMN,LIMIT_COLUMN, line, self.buffer);
+        let str = "ABCD";
+        self.lcd_print(BigFont, MAIN_COLUMN,LIMIT_COLUMN, line, s.as_str()); //self.buffer);
         self.ili.set_text_color(WHITE,BLACK);    
     }
-    
-
 }

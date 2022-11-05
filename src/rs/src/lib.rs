@@ -6,7 +6,10 @@
 #![feature(default_alloc_error_handler)]
 
 mod waree12;
-mod display;
+mod robotoLight28;
+mod robotoslab48;
+
+//mod display;
 mod display2;
 mod i2cTask;
 mod settings;
