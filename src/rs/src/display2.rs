@@ -149,15 +149,18 @@ impl  lnDisplay2  <'_>
         self.lcd_print(MediumFont, MAIN_COLUMN,LIMIT_COLUMN-UNITS_OFFSET-MAIN_COLUMN, PW_LINE);
     
     }
-    fn lcd_print2(&mut self, size : FontFamily,  column : usize ,  maxColumn : usize , line : usize, s: &str)
+    fn lcd_print2(&mut self, size : FontFamily,  column : usize ,  max_column : usize , line : usize, s: &str)
     {
         self.ili.set_font_size(size);
-        self.ili.print(column,line, s);
+        self.ili.set_cursor(column,line);
+        self.ili.print_up_to(s, max_column);
+
     }
-    fn lcd_print(&mut self, size : FontFamily,  column : usize ,  maxColumn : usize , line : usize)
+    fn lcd_print(&mut self, size : FontFamily,  column : usize ,  max_column : usize , line : usize)
     {
         self.ili.set_font_size(size);
-        self.ili.print(column,line, self.string_buf.as_str());
+        self.ili.set_cursor(column,line);
+        self.ili.print_up_to(self.string_buf.as_str(), max_column);
     }
 
     fn display_float(&mut self, cc : bool ,  value: f32,  line : usize)
