@@ -22,39 +22,45 @@ use rn::rnOsHelper::rnLogger as rnLogger;
 
 use crate::settings;
 use crate::i2cTask;
-use crate::display;
+//use crate::display;
+use crate::display2;
 //use ina219;
-
+//use crate::display::lnDisplay as Display;
+use crate::display2::lnDisplay2;
+type Display<'a> =  crate::display2::lnDisplay2<'a>;
 /**
  * \brief runTime
  */
-struct runTime
+struct runTime  <'a>
 {
    eventGroup     : rnFastEventGroup,
    adc            : rnTimingAdc,
    output         : [u16; settings::ADC_SAMPLE*2],
    pins           : [rnPin; 2] ,   
    outputEnabled  : bool,
+   display        : lnDisplay2 <'a> ,
 }
 /**
  * 
  * 
  */
-impl runTime
+impl <'a> runTime <'a>
 {
    /**
     *     
     */
-   fn new() -> runTime
+   fn new() ->  runTime  <'a>
    {
-      let t : runTime = runTime
+      let mut t : runTime = runTime
          {
             eventGroup  :  rnFastEventGroup::new(),
             adc         :  rnTimingAdc::new(0),
             output      :  [0;16],
             pins        :  [settings::PS_PIN_VBAT , settings::PS_PIN_MAX_CURRENT] , // PA0 + PA1
             outputEnabled: false,
+            display      : Display::new(),
          };         
+         t.display.init();
          t      
    }
    /**
@@ -143,20 +149,16 @@ impl runTime
              correction=correction*(current as f32);
              correction/=1000000.;
              voltage-=correction;
-             unsafe{
-               display::lnDisplay::displayVoltage( cc,  voltage);
-             }
+             self.display.display_voltage( cc,  voltage);
+             
              let mut power : f32 =voltage*(current as f32);
              power/=1000.;
-             unsafe{
-               display::lnDisplay::displayPower( cc,  power);
-             }
+             self.display.display_power( cc,  power);
+             
          }
          if((ev & (i2cTask::lnI2cTask_SignalChange::CurrentChangeEvent as u32) ) !=0 )//(lnI2cTask::CurrentChangeEvent)) != 0)
-         {
-            unsafe {
-             display::lnDisplay::displayCurrent(current);
-            }
+         {         
+            self.display.display_current(current as usize);         
          }
  
          let mut sbat  : f32=0.;
@@ -166,9 +168,8 @@ impl runTime
          {
             stopLowVoltage()
          }
-         unsafe {
-         display::lnDisplay::displayVbat( sbat);
-         }
+         self.display.display_Vbat( sbat);
+         
          // manage current Limiting
          let mut delta: i32 =lastMaxCurrent- maxCurrent;
          if(delta<0) 
@@ -185,10 +186,8 @@ impl runTime
              {
                 d=0.;
              }
-             setMaxCurrent(d as i32);
-             unsafe{
-               display::lnDisplay::displayMaxCurrent(maxCurrent);
-             }
+            setMaxCurrent(d as i32);
+            self.display.display_max_current(maxCurrent as usize);
          }
       }  
    }
@@ -258,7 +257,7 @@ fn stopLowVoltage() -> !
    setOutputEnable(false);    
    setDCEnable(false);    
    unsafe {
-      display::lnDisplay::banner("LOW BATTERY" .as_ptr() as *const c_char);    
+      // TODO self.display.banner("LOW BATTERY" .as_ptr() as *const c_char);    
    }
    loop
    {
@@ -341,10 +340,6 @@ pub extern "C" fn rnInit() -> ()
    rnGpio::pinMode(settings::PS_PIN_MAX_CURRENT   ,rnGpio::rnGpioMode::lnADC_MODE);
    rnGpio::pinMode(rnPin::PC13                    ,rnGpio::rnGpioMode::lnOUTPUT);
    rnGpio::pinMode(settings::PIN_LED              ,rnGpio::rnGpioMode::lnOUTPUT);
-   rnGpio::pinMode(settings::PIN_SWITCH           ,rnGpio::rnGpioMode::lnINPUT_PULLDOWN);
-
-   unsafe {
-      display::lnDisplay::init();
-   }
+   rnGpio::pinMode(settings::PIN_SWITCH           ,rnGpio::rnGpioMode::lnINPUT_PULLDOWN);  
 }
 // EOF

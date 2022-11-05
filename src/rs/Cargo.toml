@@ -10,6 +10,7 @@ edition = "2021"
 cty = "0.2.2"
 rnarduino = { path = "../../lnArduino/rust/rnArduino" }
 ili9341 = { path = "../../externals/simplerILI9341/rust/ili9341", features =["hs"]}
+lnspi_ili9341 =     { path = "../../externals/simplerILI9341/rust/ln_spi"}
 
 
 [lib]
@@ -20,11 +21,11 @@ crate-type = ["staticlib"] # Creates static lib
 [profile.dev]
 codegen-units = 1
 debug = true
-lto = true
+lto = false
 opt-level       = 's'
 
 [profile.release]
 codegen-units = 1
 debug = false
-lto = true
+lto = false
 opt-level       = 's'

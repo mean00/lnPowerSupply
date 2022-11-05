@@ -5,8 +5,9 @@
 #![allow(dead_code)]
 #![feature(default_alloc_error_handler)]
 
-
+mod waree12;
 mod display;
+mod display2;
 mod i2cTask;
 mod settings;
 mod app;
