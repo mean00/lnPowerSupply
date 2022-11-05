@@ -131,9 +131,9 @@ impl <'a> runTime <'a>
             rnGpio::digitalWrite(settings::PIN_LED,!self.outputEnabled);
             setOutputEnable(self.outputEnabled);            
 
-            rn::rnOsHelper::rnDelay(50); // dumb anti bounce
+            rn::rnOsHelper::rnDelay(150); // dumb anti bounce
             rnExti::enableInterrupt(settings::PIN_SWITCH);
-            
+            rn::rnOsHelper::rnDelay(150); // dumb anti bounce
          }
          
          voltage=getVoltage();
