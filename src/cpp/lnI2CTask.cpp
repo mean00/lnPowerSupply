@@ -49,17 +49,7 @@ protected:
                 int     _accumulated;
 };
 
-i2cTask *t;
 
-/**
- * 
- */
-lnI2cTask * createI2cTask(lnI2cTask::signalCb *c,const void *cookie)
-{
-    t=new i2cTask(c);
-    t->setCb(c,cookie);
-    return t;
-}
 /**
  * 
  */
@@ -82,39 +72,25 @@ i2cTask::i2cTask(signalCb *c) : lnI2cTask(c) , xTask("I2C",I2C_TASK_PRIORITY,256
     _newDCEnabled=false;
     _newOutputEnabled=false;
     _OutputEnabled=false;
-     // arbitrer must be created with screen already set up
-    // ili must be first
+
     //
     i2c=new lnI2C(PS_I2C_INSTANCE,100*1000); // I2C2
     i2c->begin();
 
+    // disable output & DC/DC
+    uint8_t data=0xff ; // the enables are active low
+    i2c->write(PCF8574_ADDRESS,1,&data);
+
   //  i2cScanner();
-
-
-    // 105->1050
-    // 107->1024
-
     currentLimiter = new myMCP4725(*i2c,MCP4725_DEFAULT_I2C_ADDRESS);
 
-    // 1024 -> 1259 mA
-    // 512-> 619 mA
-    // 256 -> 286
-    // 128 -> 133
-    // 64 ->62
-    // 32 -> 25
-    // 16 -> 12
-    // Limit = 1.25*value-25
     currentLimiter->setVoltage(200);
     ina=new simpler_INA219(i2c,3,INA219_ADDRESS,INA_SHUNT_VALUE); // 17 mOhm shunt
-    ina->setZero(21); // 21 mA offset, accuracy is ~ 25 mA
-    
-
+    ina->setZero(21); // 21 mA offset, accuracy is ~ 25 mA    
     // enable DCD/C
     // BIT 0 = DC/DC
     // BIT 1 = Enable
 
-    uint8_t data=0xff ; // the enables are active low
-    i2c->write(PCF8574_ADDRESS,1,&data);
     _currentLimited=false;
     start();
 }
@@ -190,6 +166,37 @@ void i2cTask::run()
     }
 }
 
+
+#include "i2cTask_shim.h"
+extern i2cTask *tsk;
+float   lnI2cTaskShim::getVoltage() {return tsk->getVoltage();};
+int     lnI2cTaskShim::getCurrent() {return tsk->getCurrent();};
+void    lnI2cTaskShim::setMaxCurrent(int mA) {tsk->setMaxCurrent(mA);};
+bool    lnI2cTaskShim::getCCLimited() {return tsk->getCCLimited();};
+void    lnI2cTaskShim::setDCEnable(bool enable) {tsk->setDCEnable(enable);};
+void    lnI2cTaskShim::setOutputEnable(bool enable) {tsk->setOutputEnable(enable);};
+/**
+ * 
+ */                        
+lnI2cTask *shimCreateI2CTask(lnI2cTask::signalCb *c,const void *cookie)
+{
+    xAssert(!tsk);
+    tsk=new i2cTask(c);    
+    tsk->setCb(c,cookie);    
+    return tsk;
+}
+
+
+
+/**
+ * 
+ */
+lnI2cTask * createI2cTask(lnI2cTask::signalCb *c,const void *cookie)
+{
+    return shimCreateI2CTask(c, cookie);
+}
+
+#if 0
 /**
  * 
  */
@@ -218,23 +225,6 @@ void i2cScanner()
         }
     }
 }
+#endif
 
-#include "i2cTask_shim.h"
-extern i2cTask *tsk;
-float   lnI2cTaskShim::getVoltage() {return tsk->getVoltage();};
-int     lnI2cTaskShim::getCurrent() {return tsk->getCurrent();};
-void    lnI2cTaskShim::setMaxCurrent(int mA) {tsk->setMaxCurrent(mA);};
-bool    lnI2cTaskShim::getCCLimited() {return tsk->getCCLimited();};
-void    lnI2cTaskShim::setDCEnable(bool enable) {tsk->setDCEnable(enable);};
-void    lnI2cTaskShim::setOutputEnable(bool enable) {tsk->setOutputEnable(enable);};
-/**
- * 
- */                        
-lnI2cTask *shimCreateI2CTask(lnI2cTask::signalCb *c,const void *cookie)
-{
-    t=new i2cTask(c);
-    t->setCb(c,cookie);
-    tsk=t;
-    return t;
-}
 //

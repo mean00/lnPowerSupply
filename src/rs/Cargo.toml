@@ -1,5 +1,5 @@
 [package]
-name = "rs"
+name = "rsPowerSupply"
 version = "0.1.0"
 edition = "2021"
 
@@ -9,12 +9,14 @@ edition = "2021"
 [dependencies]
 cty = "0.2.2"
 rnarduino = { path = "../../lnArduino/rust/rnArduino" }
-
-
+ili9341 = { path = "../../externals/simplerILI9341/rust/ili9341", features =["hs"]}
+lnspi_ili9341 =     { path = "../../externals/simplerILI9341/rust/ln_spi"}
+ufmt = "*"
+heapless = { version = "*", features = ["ufmt-impl"] }
 
 [lib]
 name = "rsPowerSupply"
-path = "src/rnPowerSupply.rs"
+path = "src/lib.rs"
 crate-type = ["staticlib"] # Creates static lib
 
 [profile.dev]

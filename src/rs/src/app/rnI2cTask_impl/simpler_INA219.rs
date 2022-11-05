@@ -265,6 +265,7 @@ pub const tskMPU_REGION_NORMAL_MEMORY: u32 = 8;
 pub const tskMPU_REGION_DEVICE_MEMORY: u32 = 16;
 pub const tskDEFAULT_INDEX_TO_NOTIFY: u32 = 0;
 pub const LN_IRQ_OFFSET: u32 = 0;
+pub const INA219_ADDRESS: u32 = 64;
 pub type __int8_t = cty::c_schar;
 pub type __uint8_t = cty::c_uchar;
 pub type __int16_t = cty::c_short;
@@ -898,91 +899,88 @@ extern "C" {
 extern "C" {
     pub fn strsignal(__signo: cty::c_int) -> *mut cty::c_char;
 }
-#[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-pub enum lnPin {
-    PA0 = 0,
-    PA1 = 1,
-    PA2 = 2,
-    PA3 = 3,
-    PA4 = 4,
-    PA5 = 5,
-    PA6 = 6,
-    PA7 = 7,
-    PA8 = 8,
-    PA9 = 9,
-    PA10 = 10,
-    PA11 = 11,
-    PA12 = 12,
-    PA13 = 13,
-    PA14 = 14,
-    PA15 = 15,
-    PB0 = 16,
-    PB1 = 17,
-    PB2 = 18,
-    PB3 = 19,
-    PB4 = 20,
-    PB5 = 21,
-    PB6 = 22,
-    PB7 = 23,
-    PB8 = 24,
-    PB9 = 25,
-    PB10 = 26,
-    PB11 = 27,
-    PB12 = 28,
-    PB13 = 29,
-    PB14 = 30,
-    PB15 = 31,
-    PC0 = 32,
-    PC1 = 33,
-    PC2 = 34,
-    PC3 = 35,
-    PC4 = 36,
-    PC5 = 37,
-    PC6 = 38,
-    PC7 = 39,
-    PC8 = 40,
-    PC9 = 41,
-    PC10 = 42,
-    PC11 = 43,
-    PC12 = 44,
-    PC13 = 45,
-    PC14 = 46,
-    PC15 = 47,
-    PD0 = 48,
-    PD1 = 49,
-    PD2 = 50,
-    PD3 = 51,
-    PD4 = 52,
-    PD5 = 53,
-    PD6 = 54,
-    PD7 = 55,
-    PD8 = 56,
-    PD9 = 57,
-    PD10 = 58,
-    PD11 = 59,
-    PD12 = 60,
-    PD13 = 61,
-    PD14 = 62,
-    PD15 = 63,
-    PE0 = 64,
-    PE1 = 65,
-    PE2 = 66,
-    PE3 = 67,
-    PE4 = 68,
-    PE5 = 69,
-    PE6 = 70,
-    PE7 = 71,
-    PE8 = 72,
-    PE9 = 73,
-    PE10 = 74,
-    PE11 = 75,
-    PE12 = 76,
-    PE13 = 77,
-    PE14 = 78,
-    PE15 = 79,
-    NoPin = -1,
-}
+pub const lnPin_PA0: lnPin = 0;
+pub const lnPin_PA1: lnPin = 1;
+pub const lnPin_PA2: lnPin = 2;
+pub const lnPin_PA3: lnPin = 3;
+pub const lnPin_PA4: lnPin = 4;
+pub const lnPin_PA5: lnPin = 5;
+pub const lnPin_PA6: lnPin = 6;
+pub const lnPin_PA7: lnPin = 7;
+pub const lnPin_PA8: lnPin = 8;
+pub const lnPin_PA9: lnPin = 9;
+pub const lnPin_PA10: lnPin = 10;
+pub const lnPin_PA11: lnPin = 11;
+pub const lnPin_PA12: lnPin = 12;
+pub const lnPin_PA13: lnPin = 13;
+pub const lnPin_PA14: lnPin = 14;
+pub const lnPin_PA15: lnPin = 15;
+pub const lnPin_PB0: lnPin = 16;
+pub const lnPin_PB1: lnPin = 17;
+pub const lnPin_PB2: lnPin = 18;
+pub const lnPin_PB3: lnPin = 19;
+pub const lnPin_PB4: lnPin = 20;
+pub const lnPin_PB5: lnPin = 21;
+pub const lnPin_PB6: lnPin = 22;
+pub const lnPin_PB7: lnPin = 23;
+pub const lnPin_PB8: lnPin = 24;
+pub const lnPin_PB9: lnPin = 25;
+pub const lnPin_PB10: lnPin = 26;
+pub const lnPin_PB11: lnPin = 27;
+pub const lnPin_PB12: lnPin = 28;
+pub const lnPin_PB13: lnPin = 29;
+pub const lnPin_PB14: lnPin = 30;
+pub const lnPin_PB15: lnPin = 31;
+pub const lnPin_PC0: lnPin = 32;
+pub const lnPin_PC1: lnPin = 33;
+pub const lnPin_PC2: lnPin = 34;
+pub const lnPin_PC3: lnPin = 35;
+pub const lnPin_PC4: lnPin = 36;
+pub const lnPin_PC5: lnPin = 37;
+pub const lnPin_PC6: lnPin = 38;
+pub const lnPin_PC7: lnPin = 39;
+pub const lnPin_PC8: lnPin = 40;
+pub const lnPin_PC9: lnPin = 41;
+pub const lnPin_PC10: lnPin = 42;
+pub const lnPin_PC11: lnPin = 43;
+pub const lnPin_PC12: lnPin = 44;
+pub const lnPin_PC13: lnPin = 45;
+pub const lnPin_PC14: lnPin = 46;
+pub const lnPin_PC15: lnPin = 47;
+pub const lnPin_PD0: lnPin = 48;
+pub const lnPin_PD1: lnPin = 49;
+pub const lnPin_PD2: lnPin = 50;
+pub const lnPin_PD3: lnPin = 51;
+pub const lnPin_PD4: lnPin = 52;
+pub const lnPin_PD5: lnPin = 53;
+pub const lnPin_PD6: lnPin = 54;
+pub const lnPin_PD7: lnPin = 55;
+pub const lnPin_PD8: lnPin = 56;
+pub const lnPin_PD9: lnPin = 57;
+pub const lnPin_PD10: lnPin = 58;
+pub const lnPin_PD11: lnPin = 59;
+pub const lnPin_PD12: lnPin = 60;
+pub const lnPin_PD13: lnPin = 61;
+pub const lnPin_PD14: lnPin = 62;
+pub const lnPin_PD15: lnPin = 63;
+pub const lnPin_PE0: lnPin = 64;
+pub const lnPin_PE1: lnPin = 65;
+pub const lnPin_PE2: lnPin = 66;
+pub const lnPin_PE3: lnPin = 67;
+pub const lnPin_PE4: lnPin = 68;
+pub const lnPin_PE5: lnPin = 69;
+pub const lnPin_PE6: lnPin = 70;
+pub const lnPin_PE7: lnPin = 71;
+pub const lnPin_PE8: lnPin = 72;
+pub const lnPin_PE9: lnPin = 73;
+pub const lnPin_PE10: lnPin = 74;
+pub const lnPin_PE11: lnPin = 75;
+pub const lnPin_PE12: lnPin = 76;
+pub const lnPin_PE13: lnPin = 77;
+pub const lnPin_PE14: lnPin = 78;
+pub const lnPin_PE15: lnPin = 79;
+pub const lnPin_NoPin: lnPin = -1;
+pub type lnPin = cty::c_int;
 pub const GpioMode_lnFLOATING: GpioMode = 0;
 pub const GpioMode_lnINPUT_FLOATING: GpioMode = 0;
 pub const GpioMode_lnINPUT_PULLUP: GpioMode = 2;
@@ -1013,19 +1011,19 @@ extern "C" {
 }
 extern "C" {
     #[link_name = "\u{1}_Z23lnGetGpioToggleRegisteri"]
-    pub fn lnGetGpioToggleRegister(port: cty::c_int) -> *mut cty::c_uint;
+    pub fn lnGetGpioToggleRegister(port: cty::c_int) -> *mut cty::c_ulong;
 }
 extern "C" {
     #[link_name = "\u{1}_Z26lnGetGpioDirectionRegisteri"]
-    pub fn lnGetGpioDirectionRegister(port: cty::c_int) -> *mut cty::c_uint;
+    pub fn lnGetGpioDirectionRegister(port: cty::c_int) -> *mut cty::c_ulong;
 }
 extern "C" {
     #[link_name = "\u{1}_Z22lnGetGpioValueRegisteri"]
-    pub fn lnGetGpioValueRegister(port: cty::c_int) -> *mut cty::c_uint;
+    pub fn lnGetGpioValueRegister(port: cty::c_int) -> *mut cty::c_ulong;
 }
 extern "C" {
     #[link_name = "\u{1}_Z10lnReadPorti"]
-    pub fn lnReadPort(port: cty::c_int) -> cty::c_uint;
+    pub fn lnReadPort(port: cty::c_int) -> cty::c_ulong;
 }
 extern "C" {
     #[link_name = "\u{1}_Z15lnRemapTimerPini"]
@@ -1034,9 +1032,9 @@ extern "C" {
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct lnFastIO {
-    pub _onoff: *mut cty::c_uint,
-    pub _onbit: cty::c_uint,
-    pub _offbit: cty::c_uint,
+    pub _onoff: *mut cty::c_ulong,
+    pub _onbit: cty::c_ulong,
+    pub _offbit: cty::c_ulong,
 }
 extern "C" {
     #[link_name = "\u{1}_ZN8lnFastIOC1E5lnPin"]
@@ -1050,14 +1048,11 @@ impl lnFastIO {
         __bindgen_tmp.assume_init()
     }
 }
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-pub enum lnEdge {
-    LN_EDGE_NONE = 0,
-    LN_EDGE_RISING = 1,
-    LN_EDGE_FALLING = 2,
-    LN_EDGE_BOTH = 3,
-}
+pub const lnEdge_LN_EDGE_NONE: lnEdge = 0;
+pub const lnEdge_LN_EDGE_RISING: lnEdge = 1;
+pub const lnEdge_LN_EDGE_FALLING: lnEdge = 2;
+pub const lnEdge_LN_EDGE_BOTH: lnEdge = 3;
+pub type lnEdge = cty::c_uint;
 pub type lnExtiCallback =
     ::core::option::Option<unsafe extern "C" fn(pin: lnPin, cookie: *mut cty::c_void)>;
 extern "C" {
@@ -1151,16 +1146,16 @@ extern "C" {
     pub fn vPortExitCritical();
 }
 extern "C" {
-    pub static mut SystemCoreClock: cty::c_uint;
+    pub static mut SystemCoreClock: cty::c_ulong;
 }
 extern "C" {
     pub fn do_assert(a: *const cty::c_char);
 }
 pub type TaskFunction_t = ::core::option::Option<unsafe extern "C" fn(arg1: *mut cty::c_void)>;
-pub type StackType_t = cty::c_uint;
+pub type StackType_t = cty::c_ulong;
 pub type BaseType_t = cty::c_long;
 pub type UBaseType_t = cty::c_ulong;
-pub type TickType_t = cty::c_uint;
+pub type TickType_t = cty::c_ulong;
 extern "C" {
     pub fn vPortSuppressTicksAndSleep(xExpectedIdleTime: TickType_t);
 }
@@ -1252,7 +1247,7 @@ pub struct xSTATIC_TCB {
     pub ucDummy7: [u8; 16usize],
     pub uxDummy10: [UBaseType_t; 2usize],
     pub uxDummy12: [UBaseType_t; 2usize],
-    pub ulDummy18: [cty::c_uint; 5usize],
+    pub ulDummy18: [cty::c_ulong; 5usize],
     pub ucDummy19: [u8; 5usize],
 }
 pub type StaticTask_t = xSTATIC_TCB;
@@ -1378,8 +1373,8 @@ pub type TimeOut_t = xTIME_OUT;
 #[derive(Debug, Copy, Clone)]
 pub struct xMEMORY_REGION {
     pub pvBaseAddress: *mut cty::c_void,
-    pub ulLengthInBytes: cty::c_uint,
-    pub ulParameters: cty::c_uint,
+    pub ulLengthInBytes: cty::c_ulong,
+    pub ulParameters: cty::c_ulong,
 }
 pub type MemoryRegion_t = xMEMORY_REGION;
 #[repr(C)]
@@ -1403,7 +1398,7 @@ pub struct xTASK_STATUS {
     pub eCurrentState: eTaskState,
     pub uxCurrentPriority: UBaseType_t,
     pub uxBasePriority: UBaseType_t,
-    pub ulRunTimeCounter: cty::c_uint,
+    pub ulRunTimeCounter: cty::c_ulong,
     pub pxStackBase: *mut StackType_t,
     pub usStackHighWaterMark: u16,
 }
@@ -1521,7 +1516,7 @@ extern "C" {
     pub fn uxTaskGetSystemState(
         pxTaskStatusArray: *mut TaskStatus_t,
         uxArraySize: UBaseType_t,
-        pulTotalRunTime: *mut cty::c_uint,
+        pulTotalRunTime: *mut cty::c_ulong,
     ) -> UBaseType_t;
 }
 extern "C" {
@@ -1531,33 +1526,33 @@ extern "C" {
     pub fn vTaskGetRunTimeStats(pcWriteBuffer: *mut cty::c_char);
 }
 extern "C" {
-    pub fn ulTaskGetIdleRunTimeCounter() -> cty::c_uint;
+    pub fn ulTaskGetIdleRunTimeCounter() -> cty::c_ulong;
 }
 extern "C" {
     pub fn xTaskGenericNotify(
         xTaskToNotify: TaskHandle_t,
         uxIndexToNotify: UBaseType_t,
-        ulValue: cty::c_uint,
+        ulValue: cty::c_ulong,
         eAction: eNotifyAction,
-        pulPreviousNotificationValue: *mut cty::c_uint,
+        pulPreviousNotificationValue: *mut cty::c_ulong,
     ) -> BaseType_t;
 }
 extern "C" {
     pub fn xTaskGenericNotifyFromISR(
         xTaskToNotify: TaskHandle_t,
         uxIndexToNotify: UBaseType_t,
-        ulValue: cty::c_uint,
+        ulValue: cty::c_ulong,
         eAction: eNotifyAction,
-        pulPreviousNotificationValue: *mut cty::c_uint,
+        pulPreviousNotificationValue: *mut cty::c_ulong,
         pxHigherPriorityTaskWoken: *mut BaseType_t,
     ) -> BaseType_t;
 }
 extern "C" {
     pub fn xTaskGenericNotifyWait(
         uxIndexToWaitOn: UBaseType_t,
-        ulBitsToClearOnEntry: cty::c_uint,
-        ulBitsToClearOnExit: cty::c_uint,
-        pulNotificationValue: *mut cty::c_uint,
+        ulBitsToClearOnEntry: cty::c_ulong,
+        ulBitsToClearOnExit: cty::c_ulong,
+        pulNotificationValue: *mut cty::c_ulong,
         xTicksToWait: TickType_t,
     ) -> BaseType_t;
 }
@@ -1573,7 +1568,7 @@ extern "C" {
         uxIndexToWaitOn: UBaseType_t,
         xClearCountOnExit: BaseType_t,
         xTicksToWait: TickType_t,
-    ) -> cty::c_uint;
+    ) -> cty::c_ulong;
 }
 extern "C" {
     pub fn xTaskGenericNotifyStateClear(
@@ -1585,8 +1580,8 @@ extern "C" {
     pub fn ulTaskGenericNotifyValueClear(
         xTask: TaskHandle_t,
         uxIndexToClear: UBaseType_t,
-        ulBitsToClear: cty::c_uint,
-    ) -> cty::c_uint;
+        ulBitsToClear: cty::c_ulong,
+    ) -> cty::c_ulong;
 }
 extern "C" {
     pub fn vTaskSetTimeOutState(pxTimeOut: *mut TimeOut_t);
@@ -1871,7 +1866,7 @@ pub type TimerHandle_t = *mut tmrTimerControl;
 pub type TimerCallbackFunction_t =
     ::core::option::Option<unsafe extern "C" fn(xTimer: TimerHandle_t)>;
 pub type PendedFunction_t =
-    ::core::option::Option<unsafe extern "C" fn(arg1: *mut cty::c_void, arg2: cty::c_uint)>;
+    ::core::option::Option<unsafe extern "C" fn(arg1: *mut cty::c_void, arg2: cty::c_ulong)>;
 extern "C" {
     pub fn xTimerCreate(
         pcTimerName: *const cty::c_char,
@@ -1897,7 +1892,7 @@ extern "C" {
     pub fn xTimerPendFunctionCallFromISR(
         xFunctionToPend: PendedFunction_t,
         pvParameter1: *mut cty::c_void,
-        ulParameter2: cty::c_uint,
+        ulParameter2: cty::c_ulong,
         pxHigherPriorityTaskWoken: *mut BaseType_t,
     ) -> BaseType_t;
 }
@@ -1905,7 +1900,7 @@ extern "C" {
     pub fn xTimerPendFunctionCall(
         xFunctionToPend: PendedFunction_t,
         pvParameter1: *mut cty::c_void,
-        ulParameter2: cty::c_uint,
+        ulParameter2: cty::c_ulong,
         xTicksToWait: TickType_t,
     ) -> BaseType_t;
 }
@@ -2001,10 +1996,13 @@ extern "C" {
     pub fn vEventGroupDelete(xEventGroup: EventGroupHandle_t);
 }
 extern "C" {
-    pub fn vEventGroupSetBitsCallback(pvEventGroup: *mut cty::c_void, ulBitsToSet: cty::c_uint);
+    pub fn vEventGroupSetBitsCallback(pvEventGroup: *mut cty::c_void, ulBitsToSet: cty::c_ulong);
 }
 extern "C" {
-    pub fn vEventGroupClearBitsCallback(pvEventGroup: *mut cty::c_void, ulBitsToClear: cty::c_uint);
+    pub fn vEventGroupClearBitsCallback(
+        pvEventGroup: *mut cty::c_void,
+        ulBitsToClear: cty::c_ulong,
+    );
 }
 extern "C" {
     pub fn uxEventGroupGetNumber(xEventGroup: *mut cty::c_void) -> UBaseType_t;
@@ -2114,20 +2112,20 @@ pub struct lnEventGroup {
     pub _handle: EventGroupHandle_t,
 }
 extern "C" {
-    #[link_name = "\u{1}_ZN12lnEventGroup9setEventsEj"]
-    pub fn lnEventGroup_setEvents(this: *mut lnEventGroup, events: cty::c_uint);
+    #[link_name = "\u{1}_ZN12lnEventGroup9setEventsEm"]
+    pub fn lnEventGroup_setEvents(this: *mut lnEventGroup, events: cty::c_ulong);
 }
 extern "C" {
-    #[link_name = "\u{1}_ZN12lnEventGroup10waitEventsEji"]
+    #[link_name = "\u{1}_ZN12lnEventGroup10waitEventsEmi"]
     pub fn lnEventGroup_waitEvents(
         this: *mut lnEventGroup,
-        maskint: cty::c_uint,
+        maskint: cty::c_ulong,
         timeout: cty::c_int,
-    ) -> cty::c_uint;
+    ) -> cty::c_ulong;
 }
 extern "C" {
-    #[link_name = "\u{1}_ZN12lnEventGroup10readEventsEj"]
-    pub fn lnEventGroup_readEvents(this: *mut lnEventGroup, maskInt: cty::c_uint) -> cty::c_uint;
+    #[link_name = "\u{1}_ZN12lnEventGroup10readEventsEm"]
+    pub fn lnEventGroup_readEvents(this: *mut lnEventGroup, maskInt: cty::c_ulong) -> cty::c_ulong;
 }
 extern "C" {
     #[link_name = "\u{1}_ZN12lnEventGroupC1Ev"]
@@ -2135,15 +2133,19 @@ extern "C" {
 }
 impl lnEventGroup {
     #[inline]
-    pub unsafe fn setEvents(&mut self, events: cty::c_uint) {
+    pub unsafe fn setEvents(&mut self, events: cty::c_ulong) {
         lnEventGroup_setEvents(self, events)
     }
     #[inline]
-    pub unsafe fn waitEvents(&mut self, maskint: cty::c_uint, timeout: cty::c_int) -> cty::c_uint {
+    pub unsafe fn waitEvents(
+        &mut self,
+        maskint: cty::c_ulong,
+        timeout: cty::c_int,
+    ) -> cty::c_ulong {
         lnEventGroup_waitEvents(self, maskint, timeout)
     }
     #[inline]
-    pub unsafe fn readEvents(&mut self, maskInt: cty::c_uint) -> cty::c_uint {
+    pub unsafe fn readEvents(&mut self, maskInt: cty::c_ulong) -> cty::c_ulong {
         lnEventGroup_readEvents(self, maskInt)
     }
     #[inline]
@@ -2163,8 +2165,8 @@ pub struct lnFastEventGroup__bindgen_vtable(cty::c_void);
 #[derive(Debug)]
 pub struct lnFastEventGroup {
     pub vtable_: *const lnFastEventGroup__bindgen_vtable,
-    pub _value: cty::c_uint,
-    pub _mask: cty::c_uint,
+    pub _value: cty::c_ulong,
+    pub _mask: cty::c_ulong,
     pub _waitingTask: TaskHandle_t,
 }
 extern "C" {
@@ -2172,23 +2174,23 @@ extern "C" {
     pub fn lnFastEventGroup_takeOwnership(this: *mut lnFastEventGroup);
 }
 extern "C" {
-    #[link_name = "\u{1}_ZN16lnFastEventGroup9setEventsEj"]
-    pub fn lnFastEventGroup_setEvents(this: *mut lnFastEventGroup, events: cty::c_uint);
+    #[link_name = "\u{1}_ZN16lnFastEventGroup9setEventsEm"]
+    pub fn lnFastEventGroup_setEvents(this: *mut lnFastEventGroup, events: cty::c_ulong);
 }
 extern "C" {
-    #[link_name = "\u{1}_ZN16lnFastEventGroup10waitEventsEji"]
+    #[link_name = "\u{1}_ZN16lnFastEventGroup10waitEventsEmi"]
     pub fn lnFastEventGroup_waitEvents(
         this: *mut lnFastEventGroup,
-        maskint: cty::c_uint,
+        maskint: cty::c_ulong,
         timeout: cty::c_int,
-    ) -> cty::c_uint;
+    ) -> cty::c_ulong;
 }
 extern "C" {
-    #[link_name = "\u{1}_ZN16lnFastEventGroup10readEventsEj"]
+    #[link_name = "\u{1}_ZN16lnFastEventGroup10readEventsEm"]
     pub fn lnFastEventGroup_readEvents(
         this: *mut lnFastEventGroup,
-        maskInt: cty::c_uint,
-    ) -> cty::c_uint;
+        maskInt: cty::c_ulong,
+    ) -> cty::c_ulong;
 }
 extern "C" {
     #[link_name = "\u{1}_ZN16lnFastEventGroupC1Ev"]
@@ -2200,15 +2202,19 @@ impl lnFastEventGroup {
         lnFastEventGroup_takeOwnership(self)
     }
     #[inline]
-    pub unsafe fn setEvents(&mut self, events: cty::c_uint) {
+    pub unsafe fn setEvents(&mut self, events: cty::c_ulong) {
         lnFastEventGroup_setEvents(self, events)
     }
     #[inline]
-    pub unsafe fn waitEvents(&mut self, maskint: cty::c_uint, timeout: cty::c_int) -> cty::c_uint {
+    pub unsafe fn waitEvents(
+        &mut self,
+        maskint: cty::c_ulong,
+        timeout: cty::c_int,
+    ) -> cty::c_ulong {
         lnFastEventGroup_waitEvents(self, maskint, timeout)
     }
     #[inline]
-    pub unsafe fn readEvents(&mut self, maskInt: cty::c_uint) -> cty::c_uint {
+    pub unsafe fn readEvents(&mut self, maskInt: cty::c_ulong) -> cty::c_ulong {
         lnFastEventGroup_readEvents(self, maskInt)
     }
     #[inline]
@@ -2318,16 +2324,13 @@ pub const Peripherals_pAPB1: Peripherals = 100;
 pub const Peripherals_pAPB2: Peripherals = 101;
 pub const Peripherals_pSYSCLOCK: Peripherals = 102;
 pub type Peripherals = cty::c_uint;
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-pub enum lnADC_DIVIDER {
-    lnADC_CLOCK_DIV_BY_2 = 0,
-    lnADC_CLOCK_DIV_BY_4 = 1,
-    lnADC_CLOCK_DIV_BY_6 = 2,
-    lnADC_CLOCK_DIV_BY_8 = 3,
-    lnADC_CLOCK_DIV_BY_12 = 5,
-    lnADC_CLOCK_DIV_BY_16 = 7,
-}
+pub const lnADC_DIVIDER_lnADC_CLOCK_DIV_BY_2: lnADC_DIVIDER = 0;
+pub const lnADC_DIVIDER_lnADC_CLOCK_DIV_BY_4: lnADC_DIVIDER = 1;
+pub const lnADC_DIVIDER_lnADC_CLOCK_DIV_BY_6: lnADC_DIVIDER = 2;
+pub const lnADC_DIVIDER_lnADC_CLOCK_DIV_BY_8: lnADC_DIVIDER = 3;
+pub const lnADC_DIVIDER_lnADC_CLOCK_DIV_BY_12: lnADC_DIVIDER = 5;
+pub const lnADC_DIVIDER_lnADC_CLOCK_DIV_BY_16: lnADC_DIVIDER = 7;
+pub type lnADC_DIVIDER = cty::c_uint;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct lnPeripherals {
@@ -2347,7 +2350,7 @@ extern "C" {
 }
 extern "C" {
     #[link_name = "\u{1}_ZN13lnPeripherals8getClockE11Peripherals"]
-    pub fn lnPeripherals_getClock(periph: Peripherals) -> cty::c_uint;
+    pub fn lnPeripherals_getClock(periph: Peripherals) -> cty::c_ulong;
 }
 extern "C" {
     #[link_name = "\u{1}_ZN13lnPeripherals13setAdcDividerE13lnADC_DIVIDER"]
@@ -2371,7 +2374,7 @@ impl lnPeripherals {
         lnPeripherals_disable(periph)
     }
     #[inline]
-    pub unsafe fn getClock(periph: Peripherals) -> cty::c_uint {
+    pub unsafe fn getClock(periph: Peripherals) -> cty::c_ulong {
         lnPeripherals_getClock(periph)
     }
     #[inline]
@@ -2517,7 +2520,7 @@ extern "C" {
 }
 extern "C" {
     #[link_name = "\u{1}_Z7lnGetUsv"]
-    pub fn lnGetUs() -> cty::c_uint;
+    pub fn lnGetUs() -> cty::c_ulong;
 }
 extern "C" {
     #[link_name = "\u{1}_Z9lnGetUs64v"]
@@ -2533,7 +2536,7 @@ extern "C" {
 }
 extern "C" {
     #[link_name = "\u{1}_Z7lnGetMsv"]
-    pub fn lnGetMs() -> cty::c_uint;
+    pub fn lnGetMs() -> cty::c_ulong;
 }
 extern "C" {
     pub fn free(a: *mut cty::c_void);
@@ -2542,87 +2545,136 @@ extern "C" {
     pub fn malloc(size: size_t) -> *mut cty::c_void;
 }
 #[repr(C)]
-pub struct lnI2cTask__bindgen_vtable(cty::c_void);
-#[repr(C)]
-#[derive(Debug)]
-pub struct lnI2cTask {
-    pub vtable_: *const lnI2cTask__bindgen_vtable,
-    pub _cb: lnI2cTask_signalCb,
-    pub _cookie: *const cty::c_void,
-}
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-pub enum lnI2cTask_SignalChange {
-    VoltageChangeEvent = 1,
-    CurrentChangeEvent = 2,
-    CCChangeEvent = 4,
-}
-pub type lnI2cTask_signalCb =
-    ::core::option::Option<unsafe extern "C" fn(signal: cty::c_uint, cookie: *const cty::c_void)>;
-#[repr(C)]
 #[derive(Debug, Copy, Clone)]
-pub struct lnI2cTaskShim {
-    pub _address: u8,
+pub struct simpler_INA219 {
+    pub _i2cAdr: u8,
+    pub _shuntValueMillOhm: cty::c_int,
+    pub _currentIScale: simpler_INA219_PGA,
+    pub _highVoltageScale: bool,
+    pub _zeros: [cty::c_int; 4usize],
+    pub _multiplier: f32,
+    pub _i2c: *mut lnI2C,
+    pub _multiSampling: cty::c_int,
+}
+pub const simpler_INA219_PGA_PGA1: simpler_INA219_PGA = 0;
+pub const simpler_INA219_PGA_PGA2: simpler_INA219_PGA = 1;
+pub const simpler_INA219_PGA_PGA4: simpler_INA219_PGA = 2;
+pub const simpler_INA219_PGA_PGA8: simpler_INA219_PGA = 3;
+pub type simpler_INA219_PGA = cty::c_uint;
+extern "C" {
+    #[link_name = "\u{1}_ZN14simpler_INA21911reconfigureEv"]
+    pub fn simpler_INA219_reconfigure(this: *mut simpler_INA219);
 }
 extern "C" {
-    #[link_name = "\u{1}_ZN13lnI2cTaskShim10getVoltageEv"]
-    pub fn lnI2cTaskShim_getVoltage() -> f32;
+    #[link_name = "\u{1}_ZN14simpler_INA21913writeRegisterEht"]
+    pub fn simpler_INA219_writeRegister(this: *mut simpler_INA219, reg: u8, value: u16);
 }
 extern "C" {
-    #[link_name = "\u{1}_ZN13lnI2cTaskShim10getCurrentEv"]
-    pub fn lnI2cTaskShim_getCurrent() -> cty::c_int;
+    #[link_name = "\u{1}_ZN14simpler_INA21912readRegisterEh"]
+    pub fn simpler_INA219_readRegister(this: *mut simpler_INA219, reg: u8) -> u16;
 }
 extern "C" {
-    #[link_name = "\u{1}_ZN13lnI2cTaskShim13setMaxCurrentEi"]
-    pub fn lnI2cTaskShim_setMaxCurrent(mA: cty::c_int);
+    #[link_name = "\u{1}_ZN14simpler_INA21917getBusVoltage_rawEv"]
+    pub fn simpler_INA219_getBusVoltage_raw(this: *mut simpler_INA219) -> i16;
 }
 extern "C" {
-    #[link_name = "\u{1}_ZN13lnI2cTaskShim12getCCLimitedEv"]
-    pub fn lnI2cTaskShim_getCCLimited() -> bool;
+    #[link_name = "\u{1}_ZN14simpler_INA21916getOneCurrent_mAEv"]
+    pub fn simpler_INA219_getOneCurrent_mA(this: *mut simpler_INA219) -> cty::c_int;
 }
 extern "C" {
-    #[link_name = "\u{1}_ZN13lnI2cTaskShim11setDCEnableEb"]
-    pub fn lnI2cTaskShim_setDCEnable(enable: bool);
+    #[link_name = "\u{1}_ZN14simpler_INA21919getShuntVoltage_rawEv"]
+    pub fn simpler_INA219_getShuntVoltage_raw(this: *mut simpler_INA219) -> i16;
 }
 extern "C" {
-    #[link_name = "\u{1}_ZN13lnI2cTaskShim15setOutputEnableEb"]
-    pub fn lnI2cTaskShim_setOutputEnable(enable: bool);
+    #[link_name = "\u{1}_ZN14simpler_INA21918getShuntVoltage_mVEv"]
+    pub fn simpler_INA219_getShuntVoltage_mV(this: *mut simpler_INA219) -> cty::c_int;
 }
 extern "C" {
-    #[link_name = "\u{1}_ZN13lnI2cTaskShim5setCbEPFvjPKvE"]
-    pub fn lnI2cTaskShim_setCb(c: lnI2cTask_signalCb);
+    #[link_name = "\u{1}_ZN14simpler_INA21912getVoltage_VEv"]
+    pub fn simpler_INA219_getVoltage_V(this: *mut simpler_INA219) -> f32;
 }
-impl lnI2cTaskShim {
+extern "C" {
+    #[link_name = "\u{1}_ZN14simpler_INA21913getCurrent_mAEv"]
+    pub fn simpler_INA219_getCurrent_mA(this: *mut simpler_INA219) -> cty::c_int;
+}
+extern "C" {
+    #[link_name = "\u{1}_ZN14simpler_INA2197setZeroEi"]
+    pub fn simpler_INA219_setZero(this: *mut simpler_INA219, offetMa: cty::c_int);
+}
+extern "C" {
+    #[link_name = "\u{1}_ZN14simpler_INA2198autoZeroEv"]
+    pub fn simpler_INA219_autoZero(this: *mut simpler_INA219);
+}
+extern "C" {
+    #[link_name = "\u{1}_ZN14simpler_INA219C1EP5lnI2Cihi"]
+    pub fn simpler_INA219_simpler_INA219(
+        this: *mut simpler_INA219,
+        i2c: *mut lnI2C,
+        maxCurrentinA: cty::c_int,
+        addr: u8,
+        shutResistorMilliOhm: cty::c_int,
+    );
+}
+impl simpler_INA219 {
     #[inline]
-    pub unsafe fn getVoltage() -> f32 {
-        lnI2cTaskShim_getVoltage()
+    pub unsafe fn reconfigure(&mut self) {
+        simpler_INA219_reconfigure(self)
     }
     #[inline]
-    pub unsafe fn getCurrent() -> cty::c_int {
-        lnI2cTaskShim_getCurrent()
+    pub unsafe fn writeRegister(&mut self, reg: u8, value: u16) {
+        simpler_INA219_writeRegister(self, reg, value)
     }
     #[inline]
-    pub unsafe fn setMaxCurrent(mA: cty::c_int) {
-        lnI2cTaskShim_setMaxCurrent(mA)
+    pub unsafe fn readRegister(&mut self, reg: u8) -> u16 {
+        simpler_INA219_readRegister(self, reg)
     }
     #[inline]
-    pub unsafe fn getCCLimited() -> bool {
-        lnI2cTaskShim_getCCLimited()
+    pub unsafe fn getBusVoltage_raw(&mut self) -> i16 {
+        simpler_INA219_getBusVoltage_raw(self)
     }
     #[inline]
-    pub unsafe fn setDCEnable(enable: bool) {
-        lnI2cTaskShim_setDCEnable(enable)
+    pub unsafe fn getOneCurrent_mA(&mut self) -> cty::c_int {
+        simpler_INA219_getOneCurrent_mA(self)
     }
     #[inline]
-    pub unsafe fn setOutputEnable(enable: bool) {
-        lnI2cTaskShim_setOutputEnable(enable)
+    pub unsafe fn getShuntVoltage_raw(&mut self) -> i16 {
+        simpler_INA219_getShuntVoltage_raw(self)
     }
     #[inline]
-    pub unsafe fn setCb(c: lnI2cTask_signalCb) {
-        lnI2cTaskShim_setCb(c)
+    pub unsafe fn getShuntVoltage_mV(&mut self) -> cty::c_int {
+        simpler_INA219_getShuntVoltage_mV(self)
     }
-}
-extern "C" {
-    #[link_name = "\u{1}_Z17shimCreateI2CTaskPFvjPKvES0_"]
-    pub fn shimCreateI2CTask(c: lnI2cTask_signalCb, cookie: *const cty::c_void) -> *mut lnI2cTask;
+    #[inline]
+    pub unsafe fn getVoltage_V(&mut self) -> f32 {
+        simpler_INA219_getVoltage_V(self)
+    }
+    #[inline]
+    pub unsafe fn getCurrent_mA(&mut self) -> cty::c_int {
+        simpler_INA219_getCurrent_mA(self)
+    }
+    #[inline]
+    pub unsafe fn setZero(&mut self, offetMa: cty::c_int) {
+        simpler_INA219_setZero(self, offetMa)
+    }
+    #[inline]
+    pub unsafe fn autoZero(&mut self) {
+        simpler_INA219_autoZero(self)
+    }
+    #[inline]
+    pub unsafe fn new(
+        i2c: *mut lnI2C,
+        maxCurrentinA: cty::c_int,
+        addr: u8,
+        shutResistorMilliOhm: cty::c_int,
+    ) -> Self {
+        let mut __bindgen_tmp = ::core::mem::MaybeUninit::uninit();
+        simpler_INA219_simpler_INA219(
+            __bindgen_tmp.as_mut_ptr(),
+            i2c,
+            maxCurrentinA,
+            addr,
+            shutResistorMilliOhm,
+        );
+        __bindgen_tmp.assume_init()
+    }
 }

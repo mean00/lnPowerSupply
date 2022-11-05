@@ -4,7 +4,7 @@
 # An opensource firmware for the DSO SHELL 150
 # With optional hardware mods :
 #   - Alternative rotary encoder wiring : MUCH Better, almost mandatory
-#
+# cpp -> 63.4 k
 #-----------------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.0)
@@ -15,10 +15,12 @@ MESSAGE(STATUS "======================")
 # Options
 #____________________
 
+SET(USE_CLANG      ON CACHE INTERNAL "")
+SET(LN_ENABLE_RUST ON CACHE INTERNAL "")
 SET(LN_ENABLE_I2C  ON CACHE INTERNAL "")
 SET(LN_ENABLE_SPI  ON CACHE INTERNAL "")
 
-#SET(LN_LTO "-flto")
+SET(LN_LTO "-flto")
 # USB SETUP
 #
 SET(LN_USB_NB_CDC  0 CACHE INTERNAL "")
@@ -35,7 +37,7 @@ SET(AF_FOLDER  ${CMAKE_SOURCE_DIR}/lnArduino/)
 include(./mcuSelect.cmake)
 SET(CMAKE_TOOLCHAIN_FILE ${AF_FOLDER}/lnArduino.cmake)
 
-#SET(LN_ENABLE_RUST ON CACHE INTERNAL "")
+
 
 PROJECT(lnPowerSupply NONE) # the NONE is very important !
 
@@ -88,10 +90,10 @@ ELSE()
   SET(SIMPLER_ILI9341_2BPP_SUPPORT     ON CACHE INTERNAL "")
   SET(SIMPLER_ILI9341_4BPP_SUPPORT     ON CACHE INTERNAL "")
 ENDIF()
-include_directories(externals/simplerILI9341/platformExample/lnArduino)
+include_directories(externals/simplerILI9341/cpp/platformExample/lnArduino)
 SET(ILI9341_DRIVER  platformExample/lnArduino/ili_lnSpi.cpp)
-ADD_SUBDIRECTORY(externals/simplerILI9341)
-include_directories(externals/simplerILI9341)
+ADD_SUBDIRECTORY(externals/simplerILI9341/cpp)
+include_directories(externals/simplerILI9341/cpp)
 #
 
 ADD_SUBDIRECTORY(externals/simpler_INA219)
@@ -131,15 +133,7 @@ IF(LN_ENABLE_RUST)
     TARGET_LINK_LIBRARIES( lnPowerSupply  rsPowerSupply )
 ENDIF(LN_ENABLE_RUST)
 
-IF(FALSE)
-  add_custom_command(TARGET lnPowerSupply
-                   POST_BUILD
-                   COMMAND ${CMAKE_OBJCOPY} -Obinary $<TARGET_FILE:lnDSO> $<TARGET_FILE:lnDSO>.tmp
-                   COMMAND python3 ${CMAKE_SOURCE_DIR}/lnDsoChecksum.py  $<TARGET_FILE:lnDSO>.tmp $<TARGET_FILE:lnDSO>.checksumed.bin
-                   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-                   COMMENT "Generating checksumed bin file"
-    )
-ENDIF(FALSE)
+
 
 
 # Summary

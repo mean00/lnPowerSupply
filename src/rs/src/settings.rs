@@ -5,7 +5,7 @@
 #![allow(unused_parens)]
 
 use rnarduino as rn;
-
+use rn::rnGpio::rnPin as rnPin;
 
 pub const PS_I2C_INSTANCE    : usize =  1;
 
@@ -14,15 +14,15 @@ pub const INA_SHUNT_VALUE  : usize =    106;// 106 mOhm;
 
 // screen 
 pub const ILI_SPI_INSTANCE   : usize =  0;
-pub const ILI_PIN_DC         : rn::lnPin =  rn::lnPin_PA4 ;
-pub const ILI_PIN_CS         : rn::lnPin =  rn::lnPin_PB1 ;
-pub const ILI_PIN_RESET      : rn::lnPin =  rn::lnPin_PB0 ;
+pub const ILI_PIN_DC         : rnPin =  rnPin::PA4 ;
+pub const ILI_PIN_CS         : rnPin =  rnPin::PB1 ;
+pub const ILI_PIN_RESET      : rnPin =  rnPin::PB0 ;
 
-pub const PIN_LED            : rn::lnPin =  rn::lnPin_PA3 ;
-pub const PIN_SWITCH         : rn::lnPin =  rn::lnPin_PB9 ;
+pub const PIN_LED            : rnPin =  rnPin::PA3 ;
+pub const PIN_SWITCH         : rnPin =  rnPin::PB9 ;
 
-pub const PS_PIN_VBAT        : rn::lnPin =  rn::lnPin_PA0 ;
-pub const PS_PIN_MAX_CURRENT : rn::lnPin =  rn::lnPin_PA1 ;
+pub const PS_PIN_VBAT        : rnPin =  rnPin::PA0 ;
+pub const PS_PIN_MAX_CURRENT : rnPin =  rnPin::PA1 ;
 pub const PS_INTERNAL_RESISTANCE_MILLIOHM : usize = 300; // error on voltage is  ~ 50 mV
 
 // IO Expander
@@ -42,12 +42,13 @@ pub const I2C_TASK_PRIORITY : usize = 2;
 
 
 // VBAT limit
-pub const PS_MIN_VBAT         : f32 = 15.; // at start
-pub const PS_MIN_VBAT_CRIT    : f32 = 14.; // anytime
+pub const PS_MIN_VBAT         : f32 = 16.; // at start
+pub const PS_MIN_VBAT_CRIT    : f32 = 15.; // anytime
 
 //
 pub const WIRE_RESISTANCE_MOHM  : usize = 220; // wire resistance
 
+pub const INA219_ADDRESS  : u8 = 0x40; //addr: u8,
 pub const INA_MA_FLOOR : usize = 24;
 pub const ADC_SAMPLE : usize = 8;
 
