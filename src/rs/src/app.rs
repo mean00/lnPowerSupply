@@ -9,24 +9,20 @@
 extern crate alloc;
 
 use alloc::boxed::Box;
-use cty::c_char;
 use rnarduino as rn;
 
 use rn::rnGpio as rnGpio;
 use rn::rnGpio::rnPin as rnPin;
 use rn::rnExti as rnExti;
-use rn::rnFastEventGroup::rnFastEventGroup as rnFastEventGroup;
-use rn::rnTimingAdc::rnTimingAdc as rnTimingAdc;
+use rn::rnFastEventGroup::rnFastEventGroup;
+use rn::rnTimingAdc::rnTimingAdc;
 
 use rn::rnOsHelper::rnLogger as rnLogger;
 
 use crate::settings;
 use crate::i2cTask;
-//use crate::display;
-use crate::display2;
-//use ina219;
-//use crate::display::lnDisplay as Display;
 use crate::display2::lnDisplay2;
+//use ina219;
 type Display<'a> =  crate::display2::lnDisplay2<'a>;
 /**
  * \brief runTime
@@ -256,9 +252,9 @@ fn stopLowVoltage() -> !
 {    
    setOutputEnable(false);    
    setDCEnable(false);    
-   unsafe {
-      // TODO self.display.banner("LOW BATTERY" .as_ptr() as *const c_char);    
-   }
+   
+   //self.display.banner("LOW BATTERY");    
+   
    loop
    {
       rnGpio::digitalToggle(rnPin::PC13 );    

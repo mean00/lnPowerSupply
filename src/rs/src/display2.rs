@@ -101,18 +101,35 @@ impl  lnDisplay2  <'_>
             string_buf  :  String::new(),
          }         
     }
-    
+
+    pub fn print1f(&mut self, prefix: &str, value : f32)
+    {
+        let up = value as usize;
+        let down = ((value - (up as f32))*10.) as usize;
+        self.string_buf.clear();
+        uwrite!(&mut self.string_buf, "{}{}.{}",prefix,up,down).unwrap();
+    }
+
+    pub fn print2f(&mut self, prefix: &str, value : f32)
+    {
+        let up = value as usize;
+        let down = ((value - (up as f32))*100.) as usize;
+
+        let d1 = down / 10;
+        let d2 = down -(d1*10);
+
+        self.string_buf.clear();
+        uwrite!(&mut  self.string_buf, "{}{}.{}{}",prefix,up,d1,d2 ).unwrap();
+    }
+
+
     pub  fn display_max_current(&mut self,currentMa: usize) {
         //sprintf(buffer,"%2.1fA",f);
         
         let mut currentMa = currentMa as f32;
         currentMa /= 1000.; 
-        let up = currentMa as usize;
-        let down = ((currentMa - (up as f32))*10.) as usize;
-        self.string_buf.clear();
-        uwrite!(&mut self.string_buf, "{}.{}",up,down).unwrap();
-        self.lcd_print(SmallFont, MAIN_COLUMN,LIMIT_COLUMN, MAX_C_LINE);
-     
+        self.print1f("", currentMa);
+        self.lcd_print(SmallFont, MAIN_COLUMN,LIMIT_COLUMN, MAX_C_LINE);     
     }
    
     pub  fn banner(&mut self,msg: &str) {
@@ -120,13 +137,11 @@ impl  lnDisplay2  <'_>
         self.ili.print(180,MAX_C_LINE,msg);        
     }
     
+   
+
     pub  fn display_Vbat(&mut self,vbat: f32) {
-        let up = vbat as usize;
-        let down = ((vbat - (up as f32))*10.) as usize;
-        self.string_buf.clear();
-        uwrite!(&mut self.string_buf, "Bat:{}.{}",up,down).unwrap();
-        self.lcd_print(SmallFont, 200,318, VBAT_LINE);
-    
+        self.print1f("Bat:",vbat);
+        self.lcd_print(SmallFont, 200,318, VBAT_LINE);    
     }
     
     pub  fn display_current(&mut self,ma: usize) {
@@ -140,22 +155,18 @@ impl  lnDisplay2  <'_>
         self.display_float(cc,voltage,V_LINE);
     }
     
-    pub  fn display_power(&mut self, cc: bool, pw: f32) {
-        //sprintf(buffer,"%2.1f",powr);        
-        let up = pw as usize;
-        let down = ((pw - (up as f32))*10.) as usize;
-        self.string_buf.clear();
-        uwrite!(&mut  self.string_buf, "{}.{}",up,down).unwrap();
-        self.lcd_print(MediumFont, MAIN_COLUMN,LIMIT_COLUMN-UNITS_OFFSET-MAIN_COLUMN, PW_LINE);
-    
+    pub  fn display_power(&mut self, _cc: bool, pw: f32) {
+        self.print1f("",pw);
+        self.lcd_print(MediumFont, MAIN_COLUMN,LIMIT_COLUMN-UNITS_OFFSET-MAIN_COLUMN, PW_LINE);    
     }
+
     fn lcd_print2(&mut self, size : FontFamily,  column : usize ,  max_column : usize , line : usize, s: &str)
     {
         self.ili.set_font_size(size);
         self.ili.set_cursor(column,line);
         self.ili.print_up_to(s, max_column);
-
     }
+
     fn lcd_print(&mut self, size : FontFamily,  column : usize ,  max_column : usize , line : usize)
     {
         self.ili.set_font_size(size);
@@ -164,14 +175,8 @@ impl  lnDisplay2  <'_>
     }
 
     fn display_float(&mut self, cc : bool ,  value: f32,  line : usize)
-    {
-        
-        let up = value as usize;
-        let down = ((value - (up as f32))*100.) as usize;
-        self.string_buf.clear();
-        uwrite!(&mut  self.string_buf, "{}.{}",up,down).unwrap();
-
-        //  sprintf(self.buffer,"%2.2f",value);    
+    {        
+        self.print2f("",value);        
         if cc
         {
             self.ili.set_text_color(RED,BLACK);
