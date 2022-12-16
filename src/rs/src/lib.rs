@@ -11,7 +11,8 @@ mod robotoslab48;
 
 //mod display;
 mod display2;
-mod i2cTask;
+//mod i2cTask;
+mod i2c_rs_task;
 mod settings;
 mod app;
 // EOF

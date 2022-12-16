@@ -20,7 +20,7 @@ use rn::rnTimingAdc::rnTimingAdc;
 use rn::rnOsHelper::rnLogger as rnLogger;
 
 use crate::settings;
-use crate::i2cTask;
+use crate::i2c_rs_task;
 use crate::display2::lnDisplay2;
 //use ina219;
 type Display<'a> =  crate::display2::lnDisplay2<'a>;
@@ -90,7 +90,7 @@ impl <'a> runTime <'a>
     * 
     */
    fn run(&mut self) -> ()
-   {            
+   {
       self.eventGroup.takeOwnership();             
       self.adc.setSource(3,3,1000,2,self.pins.as_ptr() );
       
@@ -101,15 +101,15 @@ impl <'a> runTime <'a>
       {
          let mut sbat  : f32=0.;
          let mut maxCurrent : i32=0;
-         self.runAdc( &mut sbat, &mut maxCurrent);
+         self.run_adc( &mut sbat, &mut maxCurrent);
          if(sbat < settings::PS_MIN_VBAT)
          {
-            stopLowVoltage()
+            self.stopLowVoltage()
          }
       }
       
-      setDCEnable(true);
-      setOutputEnable(false); 
+      self.setDCEnable(true);
+      self.setOutputEnable(false); 
 
       rnGpio::digitalWrite(settings::PIN_LED,true);
   
@@ -124,21 +124,22 @@ impl <'a> runTime <'a>
          let   current: i32;
          let   cc  : bool;
          let mut voltage : f32;
-         current=getCurrent();
-         cc=getCCLimited();
+         current=self.getCurrent();
+         cc=self.getCCLimited();
          if((ev & settings::EnableButtonEvent)!=0)
          {            
             rnGpio::digitalWrite(settings::PIN_LED,!self.outputEnabled);
-            setOutputEnable(self.outputEnabled);            
+            self.setOutputEnable(self.outputEnabled);            
 
             rn::rnOsHelper::rnDelay(150); // dumb anti bounce
             rnExti::enableInterrupt(settings::PIN_SWITCH);
             rn::rnOsHelper::rnDelay(150); // dumb anti bounce
          }
          
-         voltage=getVoltage();
+         voltage=self.getVoltage();
          // Display voltage & current
-         const msk : u32 =  (i2cTask::lnI2cTask_SignalChange::VoltageChangeEvent as u32) +  (i2cTask::lnI2cTask_SignalChange::CCChangeEvent as u32) + ( i2cTask::lnI2cTask_SignalChange::CurrentChangeEvent    as u32);
+        // const msk : u32 =  (i2c_rs_task::lni2c_rs_task_SignalChange::VoltageChangeEvent as u32) +  (i2c_rs_task::lni2c_rs_task_SignalChange::CCChangeEvent as u32) + ( i2c_rs_task::lni2c_rs_task_SignalChange::CurrentChangeEvent    as u32);
+        const msk : u32 =0;
          if( (ev & msk)!=0)
          {
              let mut correction: f32 =settings::WIRE_RESISTANCE_MOHM as f32;
@@ -152,17 +153,18 @@ impl <'a> runTime <'a>
              self.display.display_power( cc,  power);
              
          }
-         if((ev & (i2cTask::lnI2cTask_SignalChange::CurrentChangeEvent as u32) ) !=0 )//(lnI2cTask::CurrentChangeEvent)) != 0)
+         if false
+         //if((ev & (i2c_rs_task::lni2c_rs_task_SignalChange::CurrentChangeEvent as u32) ) !=0 )//(lni2c_rs_task::CurrentChangeEvent)) != 0)
          {         
             self.display.display_current(current as usize);         
          }
  
          let mut sbat  : f32=0.;
          let mut maxCurrent : i32=0;
-         self.runAdc( &mut sbat, &mut maxCurrent);
+         self.run_adc( &mut sbat, &mut maxCurrent);
          if(sbat < settings::PS_MIN_VBAT_CRIT)
          {
-            stopLowVoltage()
+            self.stopLowVoltage()
          }
          self.display.display_Vbat( sbat);
          
@@ -182,15 +184,15 @@ impl <'a> runTime <'a>
              {
                 d=0.;
              }
-            setMaxCurrent(d as i32);
+            self.setMaxCurrent(d as i32);
             self.display.display_max_current(maxCurrent as usize);
          }
-      }  
+      }
    }
    /**
     * 
-    */
-   fn runAdc(&mut self, fvbat : &mut f32 ,maxCurrentSlopped :  &mut i32 )
+   */
+   fn run_adc(&mut self, fvbat : &mut f32 ,maxCurrentSlopped :  &mut i32 )
    {
       
       self.adc.multiRead(settings::ADC_SAMPLE as i32 ,self.output.as_mut_ptr() ); 
@@ -204,99 +206,102 @@ impl <'a> runTime <'a>
    
       let mut vbat : isize ;
       let mut maxCurrent : isize ;
-       
-       vbat = max0 + ((settings::ADC_SAMPLE-1)/2) as isize;
-       vbat = vbat /(settings::ADC_SAMPLE as isize);
+      
+      vbat = max0 + ((settings::ADC_SAMPLE-1)/2) as isize;
+      vbat = vbat /(settings::ADC_SAMPLE as isize);
 
-       maxCurrent = (max1 as isize) + (((settings::ADC_SAMPLE as isize)-1)/2);
-       maxCurrent = maxCurrent/(settings::ADC_SAMPLE as isize);
+      maxCurrent = (max1 as isize) + (((settings::ADC_SAMPLE as isize)-1)/2);
+      maxCurrent = maxCurrent/(settings::ADC_SAMPLE as isize);
    
-       *fvbat = vbat as f32;    
-       *fvbat=*fvbat*9.;
-       *fvbat/=1000.;
-       
-       maxCurrent=maxCurrent*maxCurrent;
-       // 0..4095 -> 0.. 4A amp=val*1.5+50
-       // so max=4000/1.5=2660
-       maxCurrent/=6300; // 0..4000
-       maxCurrent-=maxCurrent&7;
-       maxCurrent+=50;
-       *maxCurrentSlopped=maxCurrent as i32;
+      *fvbat = vbat as f32;    
+      *fvbat=*fvbat*9.;
+      *fvbat/=1000.;
+      
+      maxCurrent=maxCurrent*maxCurrent;
+      // 0..4095 -> 0.. 4A amp=val*1.5+50
+      // so max=4000/1.5=2660
+      maxCurrent/=6300; // 0..4000
+      maxCurrent-=maxCurrent&7;
+      maxCurrent+=50;
+      *maxCurrentSlopped=maxCurrent as i32;
    }
-
-  
-}
-///
-/// 
-/// 
-fn setOutputEnable(enable: bool) -> ()
-{
-   unsafe {
-      i2cTask::lnI2cTaskShim::setOutputEnable(enable);
-   }
-}
-///
-/// 
-/// 
-/// 
-fn setDCEnable(enable: bool) -> ()
-{
-   unsafe {
-      i2cTask::lnI2cTaskShim::setDCEnable(enable);
-   }
-}
-///
-/// 
-/// 
-fn stopLowVoltage() -> !
-{    
-   setOutputEnable(false);    
-   setDCEnable(false);    
    
-   //self.display.banner("LOW BATTERY");    
-   
-   loop
+ 
+   ///
+   /// 
+   /// 
+   fn stopLowVoltage(&mut self) -> !
+   {    
+      self.setOutputEnable(false);    
+      self.setDCEnable(false);    
+      
+      //self.display.banner("LOW BATTERY");    
+      
+      loop
+      {
+         rnGpio::digitalToggle(rnPin::PC13 );    
+         rnGpio::digitalToggle(settings::PIN_LED);
+         rn::rnOsHelper::rnDelay(20);
+      }   
+   }
+   ///
+   /// 
+   /// 
+   /// 
+   fn getCurrent(&mut self, ) -> i32
    {
-      rnGpio::digitalToggle(rnPin::PC13 );    
-      rnGpio::digitalToggle(settings::PIN_LED);
-      rn::rnOsHelper::rnDelay(20);
-   }   
-}
-///
-/// 
-/// 
-/// 
-fn getCurrent() -> i32
-{
-   unsafe{
-   return i2cTask::lnI2cTaskShim::getCurrent() as i32;
+      unsafe{
+  //    return i2c_rs_task::lni2c_rs_taskShim::getCurrent() as i32;
+      }
+      0
    }
-}
-///
-/// 
-///    
-fn getCCLimited() -> bool 
-{
-   unsafe {
-      i2cTask::lnI2cTaskShim::getCCLimited()
+   ///
+   /// 
+   ///    
+   fn getCCLimited(&mut self) -> bool 
+   {
+      unsafe {
+  //       i2c_rs_task::lni2c_rs_taskShim::getCCLimited()
+      }
+      false
    }
-}
-///
-/// 
-/// 
-fn getVoltage() -> f32
-{
-   unsafe {
-       return i2cTask::lnI2cTaskShim::getVoltage();
+     ///
+   /// 
+   /// 
+   fn setOutputEnable(&mut self, enable: bool) -> ()
+   {
+      unsafe {
+   //      i2c_rs_task::lni2c_rs_taskShim::setOutputEnable(enable);
+      }
    }
-}
-///
-/// 
-/// 
-fn setMaxCurrent(max : i32) -> ()
-{
-   unsafe{
-   i2cTask::lnI2cTaskShim::setMaxCurrent(max);
+   ///
+   /// 
+   /// 
+   /// 
+   fn setDCEnable(&mut self, enable: bool) -> ()
+   {
+      unsafe {
+   //      i2c_rs_task::lni2c_rs_taskShim::setDCEnable(enable);
+      }      
+   }
+   ///
+   /// 
+   /// 
+   fn getVoltage(&mut self) -> f32
+   {
+      unsafe {
+    //     return i2c_rs_task::lni2c_rs_taskShim::getVoltage();
+      }
+      1.
+   }
+   ///
+   /// 
+   /// 
+   fn setMaxCurrent(&mut self, max : i32) -> ()
+   {
+      unsafe{
+    //  i2c_rs_task::lni2c_rs_taskShim::setMaxCurrent(max);
+      }
    }
 }
 /**
@@ -317,7 +322,7 @@ pub extern "C" fn rnLoop() -> ()
          ptr as  *mut   cty::c_void) ;
       rnExti::enableInterrupt(settings::PIN_SWITCH);   
       unsafe {    
-            i2cTask::shimCreateI2CTask(Some(runTime::cb),ptr as *const cty::c_void);
+          //  i2c_rs_task::shimCreatei2c_rs_task(Some(runTime::cb),ptr as *const cty::c_void);
 
             boxed2 = Box::from_raw(ptr);
          }
