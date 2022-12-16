@@ -14,6 +14,8 @@ lnspi_ili9341 =     { path = "../../externals/simplerILI9341/rust/ln_spi"}
 ufmt = "*"
 heapless = { version = "*", features = ["ufmt-impl"] }
 simpler_gfx= {git="https://github.com/mean00/simpler_gfx.git"}
+mcp4725 = { path = "mcp4725" }
+ina219 = { path = "ina219" }
 
 [lib]
 name = "rsPowerSupply"
