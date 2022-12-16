@@ -5,13 +5,8 @@
 #![allow(dead_code)]
 #![feature(default_alloc_error_handler)]
 
-mod waree12;
-mod robotoLight28;
-mod robotoslab48;
+mod gfx;
 
-//mod display;
-mod display2;
-//mod i2cTask;
 mod i2c_rs_task;
 mod settings;
 mod app;

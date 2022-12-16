@@ -21,9 +21,9 @@ use rn::rnOsHelper::rnLogger as rnLogger;
 
 use crate::settings;
 use crate::i2c_rs_task;
-use crate::display2::lnDisplay2;
+use crate::gfx;
 //use ina219;
-type Display<'a> =  crate::display2::lnDisplay2<'a>;
+type Display <'a> =  crate::gfx::display2::lnDisplay2 <'a>;
 /**
  * \brief runTime
  */
@@ -34,7 +34,7 @@ struct runTime  <'a>
    output         : [u16; settings::ADC_SAMPLE*2],
    pins           : [rnPin; 2] ,   
    outputEnabled  : bool,
-   display        : lnDisplay2 <'a> ,
+   display        : Display <'a>, 
 }
 /**
  * 

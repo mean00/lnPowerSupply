@@ -42,9 +42,9 @@ extern crate alloc;
 use alloc::boxed::Box;
 use ili9341::ili9341_init_sequence::{DSO_RESET,DSO_WAKEUP};
 // fonts
-use crate::waree12::Waree12pt7b                     as small_font;
-use crate::robotoLight28::Roboto_Light28pt7b        as med_font;
-use crate::robotoslab48::RobotoSlab_SemiBold48pt7b  as big_font;
+use crate::gfx::waree12::Waree12pt7b                     as small_font;
+use crate::gfx::robotoLight28::Roboto_Light28pt7b        as med_font;
+use crate::gfx::robotoslab48::RobotoSlab_SemiBold48pt7b  as big_font;
 
 
 
