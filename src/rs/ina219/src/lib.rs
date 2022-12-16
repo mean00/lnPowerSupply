@@ -25,6 +25,7 @@ pub struct INA219
     scale       : PGA,
     high_voltage: bool, 
 }
+//-------------------------------------------
 fn value_to_volt(value: usize ) -> f32
 {
     let f = ((value>>3)*4) as f32;   
@@ -33,6 +34,7 @@ fn value_to_volt(value: usize ) -> f32
 
 impl INA219
 {
+    //-------------------------------------------
     pub fn new( instance : usize, address : u8 , speed : usize, shunt_in_mohm : usize, max_current_ampere : usize) -> Self
     {
         let multi : f32 = (40./(shunt_in_mohm as f32))/4.096;
@@ -73,24 +75,27 @@ impl INA219
         r.reconfigure();
         r
     }
+    //-------------------------------------------    
     pub fn calibrate(&mut self, cal : u16)
     {
         self.write_register(INA219_REG_CALIBRATION,cal); // 4A max, 20 Ohm
     }
+    //-------------------------------------------    
     pub fn get_current_scaler(& self)  -> PGA
     {
         return self.scale;
     }
-
+    //-------------------------------------------
     pub fn  get_shunt_voltage_raw(&mut self)-> u16 // actually u16
     {
        return self.read_register(INA219_REG_BUSVOLTAGE);
     }
+    //-------------------------------------------
     pub fn  get_shunt_voltage_mv(&self)-> isize 
     {
         return 0;
     }
-
+    //-------------------------------------------
     pub fn  get_voltage_v(&mut self)-> f32
     {
         let mut value = self.get_bus_voltage_raw() as usize;
@@ -117,6 +122,7 @@ impl INA219
         }
         flat      
     }
+    //-------------------------------------------
     pub fn  get_current_ma(&mut self)-> usize
     {
         let  current = self.read_register(INA219_REG_CURRENT);
@@ -126,9 +132,7 @@ impl INA219
         }
         (current as usize+5)/10
     }
-  
-
-   
+    //-------------------------------------------
     fn     reconfigure(&mut self)
     {
         // Set Config register to take into account the settings above
@@ -141,15 +145,16 @@ impl INA219
             (10<<3) | // both I & V = 12 bits, 4 samples
             (10<<7) + 
             ((self.scale as u16)<<11)
-            ;
-              
+            ;              
         self.write_register(INA219_REG_CONFIG, config);
     }
+    //-------------------------------------------
     fn    write_register(&mut self, reg : u8, value : u16)
     {
         let datas : [u8;3]= [ reg, (value>>8) as u8, (value&0xff) as u8 ];
         self.i2c.write_to(self.address,&datas);    
     }
+    //-------------------------------------------
     fn read_register(&mut self, reg : u8) -> u16
     {
         let mut datas : [u8;2]=[0,0];
@@ -159,14 +164,12 @@ impl INA219
         let v =  ((datas[0] as u16)<<8) as u16+datas[1] as u16;
         v
     }
+    //-------------------------------------------
     fn get_bus_voltage_raw(&mut self)->u16
     {
         self.read_register(INA219_REG_BUSVOLTAGE)
     }
-    fn get_single_current_ma(&mut self) -> isize
-    {
-        return 0;
-    }
+    //-------------------------------------------
     fn set_scaler(&mut self,  scale : PGA)
     {
        self.scale = scale;
