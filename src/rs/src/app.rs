@@ -22,6 +22,8 @@ use rn::rnOsHelper::rnLogger as rnLogger;
 use crate::settings;
 use crate::i2c_rs_task;
 use crate::gfx;
+use crate::taist::*;
+
 //use ina219;
 type Display <'a> =  crate::gfx::display2::lnDisplay2 <'a>;
 /**
@@ -304,6 +306,7 @@ impl <'a> runTime <'a>
       }
    }
 }
+
 /**
  * \fn rnLoop
  * 
@@ -312,6 +315,7 @@ impl <'a> runTime <'a>
 #[no_mangle]
 pub extern "C" fn rnLoop() -> ()
 {
+      crate::taist::test_me();
       let r : runTime = runTime::new();
       let boxed : Box<runTime> = Box::new(r);
       let mut boxed2 : Box<runTime>;
@@ -326,6 +330,7 @@ pub extern "C" fn rnLoop() -> ()
 
             boxed2 = Box::from_raw(ptr);
          }
+    
       boxed2.run();
 }
 

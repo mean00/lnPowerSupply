@@ -16,6 +16,7 @@ heapless = { version = "*", features = ["ufmt-impl"] }
 simpler_gfx= {git="https://github.com/mean00/simpler_gfx.git"}
 mcp4725 = { path = "mcp4725" }
 ina219 = { path = "ina219" }
+pcf8574 = { path = "pcf8574" }
 
 [lib]
 name = "rsPowerSupply"
