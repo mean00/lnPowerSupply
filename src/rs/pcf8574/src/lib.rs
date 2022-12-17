@@ -54,14 +54,11 @@ impl PC8754
        false
     }
     pub fn write(&mut self,pin : usize, value : bool)
-    {
-        
-        if value
+    {        
+        match value
         {
-            self.conf|=1<<pin;
-        }else
-        {
-            self.conf&=!(1<<pin);
+            true  =>  self.conf |= 1<<pin ,
+            false =>  self.conf &= !(1<<pin),
         }
         self.i2c.write_to(self.address,&[ self.conf ]);
     }

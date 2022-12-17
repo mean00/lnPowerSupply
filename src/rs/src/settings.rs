@@ -25,17 +25,13 @@ pub const PS_PIN_VBAT        : rnPin =  rnPin::PA0 ;
 pub const PS_PIN_MAX_CURRENT : rnPin =  rnPin::PA1 ;
 pub const PS_INTERNAL_RESISTANCE_MILLIOHM : usize = 300; // error on voltage is  ~ 50 mV
 
-// IO Expander
+// IO Expander - PCF8574
 pub const IO_EXPANDER_ADDRESS        : usize =  32;
-pub const IO_EXPANDER_DC_ENABLE      : usize =  0; // bit 0
-pub const IO_EXPANDER_RELAY_ENABLE   : usize =  1;
-pub const IO_EXPANDER_CC_MODE        : usize =  2; // bit 2
+pub const IO_EXPANDER_DC_ENABLE      : usize =  0; // bit 0 - output
+pub const IO_EXPANDER_RELAY_ENABLE   : usize =  1; // bit 1 - output
+pub const IO_EXPANDER_CC_MODE        : usize =  2; // bit 2 - input
 
-// PCF8574
-//pub const PCF8574_ADDRESS         : usize = 32;
-//pub const PCF8574_DCDC_ENABLE     : usize = 1;// out
-//pub const PCF8574_RELAY_ENABLE    : usize = 2;// out
-//pub const PCF8574_CC_MODE         : usize = 4;// in
+
 
 // Tasks 
 pub const I2C_TASK_PRIORITY : usize = 2;
