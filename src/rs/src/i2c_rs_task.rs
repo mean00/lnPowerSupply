@@ -1,14 +1,6 @@
-#![allow(non_upper_case_globals)]
+
 #![allow(unused_variables)]
-#![allow(unused_code)]
 extern crate alloc;
-
-use alloc::boxed::Box;
-use rnarduino as rn;
-
-use rn::rnGpio as rnGpio;
-use rn::rnGpio::rnPin as rnPin;
-use rn::rnOsHelper::rnLogger as rnLogger;
 use cty::c_void;
 use crate::settings::{*};
 use rnarduino::rnOsHelper::{rnCreateTask,rnTaskEntry,rnDelay};
@@ -16,7 +8,6 @@ use pcf8574::PC8754;
 use ina219::INA219;
 use mcp4725::MCP4725;
 
-use core::str;
 
 pub enum PeripheralEvent
 {
@@ -32,12 +23,12 @@ pub trait peripheral_notify
 pub trait peripheral_interface
 {
 
-            fn  get_voltage(&mut self) -> f32;
-            fn  get_current_ma(&mut self) -> usize;
+            fn  voltage(&mut self) -> f32;
+            fn  current_ma(&mut self) -> usize;
             fn  set_max_current(&mut self, milliamp : usize) ;
             fn  cc_limited(&mut self) -> bool;
-            fn  dcdc_enable(&mut self, enable : bool) ;
-            fn  output_enable(&mut self, enable: bool) ;            
+            fn  set_dcdc_enable(&mut self, enable : bool) ;
+            fn  set_output_enable(&mut self, enable: bool) ;            
 }
 //-----------------------------------------------------------
 pub struct  power_supply_peripheral <'a>
@@ -91,7 +82,7 @@ impl <'a> power_supply_peripheral  <'a>
     pub fn trampoline( param : *mut c_void)
     {
         unsafe {
-            let mut me:  &mut power_supply_peripheral = &mut (*(param as *mut power_supply_peripheral));
+            let me:  &mut power_supply_peripheral = &mut (*(param as *mut power_supply_peripheral));
             me.run();
         }
       
@@ -99,7 +90,7 @@ impl <'a> power_supply_peripheral  <'a>
   
     pub fn start(&mut self)
     {        
-        let mut myself =  self as *mut _ as *mut c_void;
+        let myself =  self as *mut _ as *mut c_void;
         rnCreateTask( &(Self::trampoline as rnTaskEntry) , "i2c",I2C_TASK_PRIORITY, 1024, myself);
     }
 
@@ -159,11 +150,11 @@ impl <'a> power_supply_peripheral  <'a>
 //-----------------------------------------------------------
 impl <'a> peripheral_interface for power_supply_peripheral <'a>
 {
-    fn  get_voltage(&mut self) -> f32
+    fn  voltage(&mut self) -> f32
     {
         self.current_volt
     }
-    fn  get_current_ma(&mut self) -> usize
+    fn  current_ma(&mut self) -> usize
     {
         self.current_ma
     }
@@ -176,11 +167,11 @@ impl <'a> peripheral_interface for power_supply_peripheral <'a>
         self.current_cc
     }
     //--
-    fn  dcdc_enable(&mut self, enable : bool)
+    fn  set_dcdc_enable(&mut self, enable : bool)
     {
         self.updated_dc_enabled = enable;         
     }
-    fn  output_enable(&mut self, enable: bool)
+    fn  set_output_enable(&mut self, enable: bool)
     {
         self.updated_relay_enabled = enable;
     }    
