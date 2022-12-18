@@ -10,7 +10,10 @@ use rn::rnGpio::rnPin as rnPin;
 pub const PS_I2C_INSTANCE    : usize =  1;
 
 // INA
-pub const INA_SHUNT_VALUE  : usize =    106;// 106 mOhm;
+pub const INA219_SHUNT_VALUE    : usize =    109;// 106 mOhm;
+pub const INA219_ADDRESS        : u8 =       0x40; //addr: u8,
+pub const INA219_OFFSET         : usize =    25;
+pub const INA219_MIN            : usize =    5;
 
 // screen 
 pub const ILI_SPI_INSTANCE   : usize =  0;
@@ -31,7 +34,8 @@ pub const IO_EXPANDER_DC_ENABLE      : usize =  0; // bit 0 - output
 pub const IO_EXPANDER_RELAY_ENABLE   : usize =  1; // bit 1 - output
 pub const IO_EXPANDER_CC_MODE        : usize =  2; // bit 2 - input
 
-
+// MCP4725
+pub const MCP4725_ADDRESS             : u8 = 0x60;
 
 // Tasks 
 pub const I2C_TASK_PRIORITY : usize = 2;
@@ -44,8 +48,6 @@ pub const PS_MIN_VBAT_CRIT    : f32 = 15.; // anytime
 //
 pub const WIRE_RESISTANCE_MOHM  : usize = 220; // wire resistance
 
-pub const INA219_ADDRESS  : u8 = 0x40; //addr: u8,
-pub const INA_MA_FLOOR : usize = 24;
 pub const ADC_SAMPLE : usize = 8;
 
 pub const   EnableButtonEvent : u32 = 128;
