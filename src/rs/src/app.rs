@@ -5,6 +5,7 @@
 #![allow(unused_parens)]
 #![allow(unused_variables)]
 #![allow(dead_code)]
+#![allow(unused_imports)]
 
 extern crate alloc;
 
@@ -252,9 +253,6 @@ impl <'a> runTime <'a>
    /// 
    fn getCurrent(&mut self, ) -> i32
    {
-      unsafe{
-  //    return i2c_rs_task::lni2c_rs_taskShim::getCurrent() as i32;
-      }
       0
    }
    ///
@@ -262,9 +260,6 @@ impl <'a> runTime <'a>
    ///    
    fn getCCLimited(&mut self) -> bool 
    {
-      unsafe {
-  //       i2c_rs_task::lni2c_rs_taskShim::getCCLimited()
-      }
       false
    }
      ///
@@ -272,9 +267,6 @@ impl <'a> runTime <'a>
    /// 
    fn setOutputEnable(&mut self, enable: bool) -> ()
    {
-      unsafe {
-   //      i2c_rs_task::lni2c_rs_taskShim::setOutputEnable(enable);
-      }
    }
    ///
    /// 
@@ -282,18 +274,12 @@ impl <'a> runTime <'a>
    /// 
    fn setDCEnable(&mut self, enable: bool) -> ()
    {
-      unsafe {
-   //      i2c_rs_task::lni2c_rs_taskShim::setDCEnable(enable);
-      }      
    }
    ///
    /// 
    /// 
    fn getVoltage(&mut self) -> f32
    {
-      unsafe {
-    //     return i2c_rs_task::lni2c_rs_taskShim::getVoltage();
-      }
       1.
    }
    ///
@@ -301,9 +287,6 @@ impl <'a> runTime <'a>
    /// 
    fn setMaxCurrent(&mut self, max : i32) -> ()
    {
-      unsafe{
-    //  i2c_rs_task::lni2c_rs_taskShim::setMaxCurrent(max);
-      }
    }
 }
 

@@ -4,6 +4,7 @@
 #![allow(unused_doc_comments)]
 #![allow(unused_parens)]
 #![allow(unused_variables)]
+#![allow(unused_imports)]
 #![allow(dead_code)]
 
 extern crate alloc;
@@ -19,6 +20,9 @@ use heapless::String;
 use ufmt::{derive::uDebug, uDebug, uWrite, uwrite, uwriteln, Formatter};
 use core::str;
 use mcp4725::MCP4725;
+
+use crate::i2c_rs_task::power_supply_peripheral;
+
 /**
  *  A => shut volt / 10.2 => amp
  *  102 mOhm
@@ -28,6 +32,11 @@ use mcp4725::MCP4725;
 
 pub fn test_me()
 {
+
+    // create the i2c fake task
+    let tsk : power_supply_peripheral = power_supply_peripheral::new();
+
+
     // PC84
     let mut pcf : PC8754 = PC8754::new(PS_I2C_INSTANCE, IO_EXPANDER_ADDRESS as u8);
 

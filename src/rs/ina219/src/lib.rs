@@ -160,7 +160,10 @@ impl INA219
     fn     reconfigure(&mut self)
     {
         // Set Config register to take into account the settings above
-        let bit_12_2_samples = 9; // 12 bits, 2 samples average => 1 ms to sample
+        // 8-> 12 bits, 1 samples average => 0.5 ms to sample
+        // 9-> 12 bits, 2 samples average => 1 ms to sample
+        // 11-> 12 bits, 32 samples average => 17 ms to sample
+        let bit_12_2_samples = 8; // 12 bits, 2 samples average => 1 ms to sample
         let mut config :u16 = 
             match self.high_voltage
             {
@@ -169,7 +172,6 @@ impl INA219
             }+      INA219_CONFIG_MODE_SANDBVOLT_CONTINUOUS;
         
         config |=  ((self.scale as u16)<<11) ;
-
         config |= bit_12_2_samples<<3; // shunt
         config |= bit_12_2_samples<<7; // bus
         self.write_register(INA219_REG_CONFIG, config |             INA219_CONFIG_RESET);
