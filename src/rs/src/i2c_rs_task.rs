@@ -40,7 +40,7 @@ pub trait peripheral_interface
             fn  output_enable(&mut self, enable: bool) ;            
 }
 //-----------------------------------------------------------
-pub struct power_supply_peripheral
+pub struct  power_supply_peripheral <'a>
 {
     pc8574   : PC8754,
     ina219   : INA219,
@@ -58,13 +58,13 @@ pub struct power_supply_peripheral
     updated_dc_enabled      : bool, 
     updated_relay_enabled   : bool,
 
-    callback                : &'static dyn peripheral_notify, 
+    callback                : &'a dyn peripheral_notify, 
 
 }
 //-----------------------------------------------------------
-impl power_supply_peripheral
+impl <'a> power_supply_peripheral  <'a>
 {
-    pub fn new( cb : &'static dyn peripheral_notify) -> Self
+    pub fn new( cb : &'a dyn peripheral_notify) -> Self
     {        
         let mut r = power_supply_peripheral
         {
@@ -157,7 +157,7 @@ impl power_supply_peripheral
     }
 }
 //-----------------------------------------------------------
-impl peripheral_interface for power_supply_peripheral
+impl <'a> peripheral_interface for power_supply_peripheral <'a>
 {
     fn  get_voltage(&mut self) -> f32
     {
