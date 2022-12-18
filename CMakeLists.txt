@@ -134,7 +134,7 @@ ENDIF()
 TARGET_LINK_LIBRARIES( lnPowerSupply  simplerILI9341 simpler_INA219 simplerMCP4725 ${DSO_EXTRA_LIB} )
 
 IF(LN_ENABLE_RUST)
-    TARGET_LINK_LIBRARIES( lnPowerSupply  rsPowerSupply )
+    TARGET_LINK_LIBRARIES( lnPowerSupply  rsPowerSupply lnarduino_c_bindings )
 ENDIF(LN_ENABLE_RUST)
 
 
