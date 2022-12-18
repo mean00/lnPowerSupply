@@ -15,6 +15,12 @@ use rn::rnOsHelper::rnLogger as rnLogger;
 use cty::c_void;
 use crate::settings::{*};
 use rnarduino::rnOsHelper::{rnCreateTask,rnTaskEntry,rnDelay};
+use pcf8574::PC8754;
+use ina219::INA219;
+use mcp4725::MCP4725;
+
+use core::str;
+
 //-----------------------------------------------------------
 pub trait peripheral_interface
 {
@@ -30,6 +36,9 @@ pub trait peripheral_interface
 //-----------------------------------------------------------
 pub struct power_supply_peripheral
 {
+    pc8574   : PC8754,
+    ina219   : INA219,
+    mcp4725  : MCP4725,
 
 }
 //-----------------------------------------------------------
@@ -40,8 +49,11 @@ impl power_supply_peripheral
         //pub fn rnCreateTask(entry : &rnTaskEntry, name: &str, priority : usize, taskSize : u32)
         let mut r = power_supply_peripheral
         {
-
+            pc8574   : PC8754::new(PS_I2C_INSTANCE, IO_EXPANDER_ADDRESS as u8),
+            ina219   : INA219::new(PS_I2C_INSTANCE as usize, INA219_ADDRESS as u8,  100*1000, INA219_SHUNT_VALUE ,3),
+            mcp4725  : MCP4725::new( PS_I2C_INSTANCE as usize, MCP4725_ADDRESS , 100*1000),
         };
+
         r.start();
         r
     }
@@ -55,6 +67,8 @@ impl power_supply_peripheral
     }
     pub fn run(&mut self)
     {
+        self.pc8574.write(IO_EXPANDER_DC_ENABLE, false); // DC/DC is active low
+        self.pc8574.write(IO_EXPANDER_RELAY_ENABLE,false);
         loop
         {
             rnLogger("Hey!!\n");

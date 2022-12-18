@@ -11,6 +11,8 @@ extern crate alloc;
 
 use alloc::boxed::Box;
 use rnarduino as rn;
+use rn::rnGpio::rnPin;
+use rn::rnGpio;
 use pcf8574::PC8754;
 use ina219::INA219;
 use rn::rnOsHelper::*;
@@ -36,14 +38,22 @@ pub fn test_me()
     // create the i2c fake task
     let tsk : power_supply_peripheral = power_supply_peripheral::new();
 
-
+/*
     // PC84
     let mut pcf : PC8754 = PC8754::new(PS_I2C_INSTANCE, IO_EXPANDER_ADDRESS as u8);
 
     pcf.write(IO_EXPANDER_DC_ENABLE, false); // DC/DC is active low
     pcf.write(IO_EXPANDER_RELAY_ENABLE,false);
+*/
+    let mut led : rnPin  = rnPin::PC13;
+    rnGpio::pin_mode(led, rnGpio::rnGpioMode::lnOUTPUT);
+    loop
+    {
+        rnGpio::digital_toggle(led);
+        rnDelay(1000);
+    }
 
-   
+   /*
 
     // INA
     let mut string_buf: String<64>  =  String::new();
@@ -96,5 +106,6 @@ pub fn test_me()
         rnLogger(&string_buf);
         
     }
+    */
 
 }
