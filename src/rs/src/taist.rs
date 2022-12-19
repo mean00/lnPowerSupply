@@ -73,7 +73,7 @@ impl  <'a> main_loop  <'a>
     /*
     
     */
-    pub extern "C" fn onOffCallback(pin: rnPin, cookie: *mut cty::c_void)  -> ()
+    pub extern "C" fn onOffCallback(_pin: rnPin, cookie: *mut cty::c_void)  -> ()
     {
       let p: &mut main_loop ;
       p= unsafe { &mut *(cookie as *mut main_loop) };
