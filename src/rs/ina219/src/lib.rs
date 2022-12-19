@@ -41,8 +41,8 @@ impl INA219
         let multi : f32 = (40./(shunt_in_mohm as f32))/4.096;
         let max_shunt_voltage = shunt_in_mohm*max_current_ampere;
         let divider : PGA ;
-        const abs_max_shunt_voltage : usize =330; // in theory the max is 320...
-        if max_shunt_voltage>abs_max_shunt_voltage
+        const ABS_MAX_SHUNT_VOLTAGE : usize =330; // in theory the max is 320...
+        if max_shunt_voltage>ABS_MAX_SHUNT_VOLTAGE
         {
             panic!("oops");// wrong configuration
         } 
@@ -50,7 +50,7 @@ impl INA219
         {
             divider = match max_shunt_voltage
             {
-                160..=abs_max_shunt_voltage => PGA::PGA8, 
+                160..=ABS_MAX_SHUNT_VOLTAGE => PGA::PGA8, 
                 80..=159  => PGA::PGA4,
                 40..=79   => PGA::PGA2,
                 _         => PGA::PGA1,
@@ -171,7 +171,7 @@ impl INA219
                 false => 0,
             }+      INA219_CONFIG_MODE_SANDBVOLT_CONTINUOUS;
         
-        config |=  ((self.scale as u16)<<11) ;
+        config |=  (self.scale as u16)<<11 ;
         config |= bit_12_2_samples<<3; // shunt
         config |= bit_12_2_samples<<7; // bus
         self.write_register(INA219_REG_CONFIG, config |             INA219_CONFIG_RESET);

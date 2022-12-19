@@ -1,7 +1,7 @@
 #![no_std]
 use rnarduino::rnI2C::rnI2C as rnI2C;
 
-const MCP4725_CMD_WRITEDAC  :       u8 = 2<<5;  // Writes data to the DAC
+//const MCP4725_CMD_WRITEDAC  :       u8 = 2<<5;  // Writes data to the DAC
 const MCP4725_CMD_WRITEDACEEPROM  : u8 = 3<<5;  // Writes data to the DAC and the EEPROM (persisting the assigned value after reset)
 pub const MCP4725_DEFAULT_ADDRESS : u8 = 0x60;
 
