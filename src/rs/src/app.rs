@@ -1,6 +1,3 @@
-
-
-
 mod utils;
 extern crate alloc;
 use alloc::boxed::Box;
@@ -33,7 +30,7 @@ struct main_loop <'a>
     pins           : [rnPin; 2] ,   
     outputEnabled  : bool,
     display        : Display <'a>, 
-    slave          : &'a dyn peripheral_interface,
+    slave          : &'a mut dyn peripheral_interface <'a> ,
 }
 //--------------------------------
 impl   <'a> peripheral_notify for main_loop  <'a>
@@ -52,11 +49,13 @@ impl  <'a> main_loop  <'a>
      */
     pub fn run(&mut self)
     {
-        self.eventGroup.takeOwnership();     
+        self.eventGroup.takeOwnership();    
+        // start the i2c task        
+        self.slave.start(&self);
+         
         // create adc        
         self.adc.setSource(3,3,1000,2,self.pins.as_ptr() );
-        // create the i2c fake task
-        let _tsk : power_supply_peripheral = power_supply_peripheral::new(self);
+        
         let led : rnPin  = rnPin::PC13;
         rnGpio::pin_mode(led, rnGpio::rnGpioMode::lnOUTPUT);
 
@@ -181,6 +180,7 @@ impl  <'a> main_loop  <'a>
                 pins        :  [PS_PIN_VBAT , PS_PIN_MAX_CURRENT] , // PA0 + PA1
                 outputEnabled: false,
                 display      : Display::new(),
+                slave        : &mut power_supply_peripheral::new(),
         }
     }
 }

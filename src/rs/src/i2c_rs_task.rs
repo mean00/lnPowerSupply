@@ -20,9 +20,9 @@ pub trait peripheral_notify
     fn notify(&self, event :  PeripheralEvent);
 }
 //-----------------------------------------------------------
-pub trait peripheral_interface
+pub trait   peripheral_interface <'a>
 {
-
+            fn  start(&mut self,  cb : &'a dyn peripheral_notify);
             fn  voltage(&mut self) -> f32;
             fn  current_ma(&mut self) -> usize;
             fn  set_max_current(&mut self, milliamp : usize) ;
@@ -49,13 +49,13 @@ pub struct  power_supply_peripheral <'a>
     updated_dc_enabled      : bool, 
     updated_relay_enabled   : bool,
 
-    callback                : &'a dyn peripheral_notify, 
+    callback                : Option<&'a dyn peripheral_notify>,
 
 }
 //-----------------------------------------------------------
 impl <'a> power_supply_peripheral  <'a>
 {
-    pub fn new( cb : &'a dyn peripheral_notify) -> Self
+    pub fn new() -> Self
     {        
         let mut r = power_supply_peripheral
         {
@@ -69,14 +69,12 @@ impl <'a> power_supply_peripheral  <'a>
             current_relay_enabled   : false, 
             current_cc              : false,
         
-            callback                : cb,
+            callback                : None,
         
             updated_max_current     : 200,
             updated_dc_enabled      : false, 
             updated_relay_enabled   : false,
-        };
-
-        r.start();
+        };      
         r
     }
     pub fn trampoline( param : *mut c_void)
@@ -88,15 +86,15 @@ impl <'a> power_supply_peripheral  <'a>
       
     }
   
-    pub fn start(&mut self)
-    {        
-        let myself =  self as *mut _ as *mut c_void;
-        rnCreateTask( &(Self::trampoline as rnTaskEntry) , "i2c",I2C_TASK_PRIORITY, 1024, myself);
-    }
+
 
     fn notify(&mut self, event : PeripheralEvent)
     {
-        self.callback.notify(event);
+        match self.callback
+        {
+            Some(x) => x.notify(event),
+            None => panic!("no callback"),
+        }
     }
 
     //----------------------
@@ -148,8 +146,14 @@ impl <'a> power_supply_peripheral  <'a>
     }
 }
 //-----------------------------------------------------------
-impl <'a> peripheral_interface for power_supply_peripheral <'a>
+impl <'a> peripheral_interface <'a> for power_supply_peripheral <'a>
 {
+    fn start(&mut self,  cb : &'a dyn peripheral_notify)
+    {        
+        self.callback = Some(cb);
+        let myself =  self as *mut _ as *mut c_void;
+        rnCreateTask( &(Self::trampoline as rnTaskEntry) , "i2c",I2C_TASK_PRIORITY, 1024, myself);
+    }
     fn  voltage(&mut self) -> f32
     {
         self.current_volt
