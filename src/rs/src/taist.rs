@@ -51,16 +51,69 @@ impl  <'a> main_loop  <'a>
      */
     pub fn run(&mut self)
     {
+        self.eventGroup.takeOwnership();     
+        // create adc        
+        self.adc.setSource(3,3,1000,2,self.pins.as_ptr() );
         // create the i2c fake task
         let _tsk : power_supply_peripheral = power_supply_peripheral::new(self);
         let led : rnPin  = rnPin::PC13;
         rnGpio::pin_mode(led, rnGpio::rnGpioMode::lnOUTPUT);
+
+        //
+        // Check we are not in low battery mode from the start
+        //---
+        let mut lastMaxCurrent : i32 = -11;
+        {
+            let mut sbat  : f32=0.;
+            let mut maxCurrent : i32=0;
+            self.run_adc( &mut sbat, &mut maxCurrent);
+            if sbat < PS_MIN_VBAT
+            {
+                self.stop_due_to_low_voltage()
+            }
+        }
         loop
             {
                 rnGpio::digital_toggle(led);
                 rnDelay(1000);
             }
     }
+
+    fn run_adc(&mut self, fvbat : &mut f32 ,maxCurrentSlopped :  &mut i32 ) -> (f32, i32) // vbat, maxCurrent
+    {
+       
+       self.adc.multiRead(ADC_SAMPLE as i32 ,self.output.as_mut_ptr() ); 
+       let mut max0 : isize =0;
+       let mut max1 : isize =0;
+       
+       for i in 0..ADC_SAMPLE   {
+          max0+=self.output[i+i] as isize;   
+          max1+=self.output[i+i+1] as isize;
+       }
+    
+       let mut vbat : isize ;
+       let mut maxCurrent : isize ;
+       
+       vbat = max0 + ((ADC_SAMPLE-1)/2) as isize;
+       vbat = vbat /(ADC_SAMPLE as isize);
+ 
+       maxCurrent = (max1 as isize) + (((ADC_SAMPLE as isize)-1)/2);
+       maxCurrent = maxCurrent/(ADC_SAMPLE as isize);
+    
+       let mut fvbat = vbat as f32;    
+       fvbat=fvbat*9.;
+       fvbat/=1000.;
+       
+       maxCurrent=maxCurrent*maxCurrent;
+       // 0..4095 -> 0.. 4A amp=val*1.5+50
+       // so max=4000/1.5=2660
+       maxCurrent/=6300; // 0..4000
+       maxCurrent-=maxCurrent&7;
+       maxCurrent+=50;
+       let maxCurrentSlopped=maxCurrent as i32;
+       (fvbat, maxCurrentSlopped)
+    }
+
     /**
      * 
      */
