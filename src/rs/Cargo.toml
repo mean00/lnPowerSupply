@@ -26,11 +26,11 @@ crate-type = ["staticlib"] # Creates static lib
 [profile.dev]
 codegen-units = 1
 debug = true
-lto = true
+lto = false
 opt-level       = 's'
 
 [profile.release]
 codegen-units = 1
-debug = false
-lto = true
+debug = true
+lto = false
 opt-level       = 's'

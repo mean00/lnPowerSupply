@@ -7,7 +7,7 @@
 
 mod gfx;
 
-mod i2c_rs_task;
+//mod i2c_rs_task;
 mod settings;
 //mod taist;
 mod app;

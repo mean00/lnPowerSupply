@@ -50,7 +50,7 @@ pub const WIRE_RESISTANCE_MOHM  : usize = 220; // wire resistance
 
 pub const ADC_SAMPLE : usize = 8;
 
-pub const   EnableButtonEvent : u32 = 128;
+pub const   EnableButtonEvent  : u32 = 128;
 pub const   MeasureChangeEvent : u32 = 64;
 
 
