@@ -30,7 +30,7 @@ struct main_loop <'a>
     pins                    : [rnPin; 2] ,
     outputEnabled           : bool,
     display                 : Display <'a>,
-    control                 : i2c_task <'a> ,
+    control                 : i2c_task ,
 
 }
 impl <'a> observer for main_loop <'a>
@@ -49,7 +49,8 @@ impl  <'a> main_loop  <'a>
         self.display.init();
         self.eventGroup.takeOwnership();    
 
-        self.control.set_observer(self);            
+        let me = self as *mut  main_loop as *mut c_void;
+        self.control.set_observer(me);
         
         self.control.start_slave_task();
         

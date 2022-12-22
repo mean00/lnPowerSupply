@@ -21,7 +21,7 @@ pub trait observer
 }
 
 
-pub struct i2c_task <'a>
+pub struct i2c_task 
 {
     // slave task part
     current_volt            : f32,
@@ -40,10 +40,10 @@ pub struct i2c_task <'a>
     ina219                  : INA219,
     mcp4725                 : MCP4725,
 
-    obs                     : Option<&'a main_loop <'a>>,
+    obs                     : Option<*mut  c_void>,
 }
 //-----------------------------------------------------------
-impl   <'a> i2c_task  <'a>
+impl   <'a> i2c_task  
 {    
     pub fn trampoline( param : *mut c_void)
     {
@@ -77,14 +77,20 @@ impl   <'a> i2c_task  <'a>
     //
     //
     //
-    pub fn set_observer(&mut self,  obs : &main_loop)
-    {
-        
-      //  self.obs = Some(obs);
+    pub fn set_observer(&mut self,  obs : *mut  c_void)
+    {        
+        self.obs = Some(obs);
     }
     fn internal_notify(&mut self, event : PeripheralEvent)
     {        
-    //    self.notify(event);
+        if let Some(x) = self.obs
+        {
+            unsafe
+            {
+                let p  = (x as *mut main_loop).as_mut();
+                p.expect("oops").notify(event);
+            }
+        }
     }
 
     //----------------------
