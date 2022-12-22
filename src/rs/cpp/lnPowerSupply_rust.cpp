@@ -48,16 +48,7 @@ void loop()
     }
 
 }
-/**
- * 
- */
-/**
- * 
- */
-void i2cCb(uint32_t signal, const void *cookie)
-{
-    // this should be overriden by the rust version
-}
+
 extern "C" 
 {
 void __aeabi_unwind_cpp_pr0()

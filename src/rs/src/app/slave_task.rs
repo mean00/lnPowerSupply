@@ -1,28 +1,90 @@
-
-use super::main_loop;
 use crate::settings::*;
-
+extern crate alloc;
+use alloc::boxed::Box;
+use crate::app::main_loop;
 use rnarduino::rnOsHelper::{rnCreateTask,rnTaskEntry,rnDelay};
 use cty::c_void;
-use crate::app::PeripheralEvent;
+use pcf8574::PC8754;
+use ina219::INA219;
+use mcp4725::MCP4725;
 
+pub enum PeripheralEvent
+{
+    CCChangeEvent=1,
+    VoltageChangeEvent=2,
+    CurrentChangeEvent=4,
+}
+
+pub trait observer
+{
+    fn notify(&mut self, event : PeripheralEvent);
+}
+
+
+pub struct i2c_task <'a>
+{
+    // slave task part
+    current_volt            : f32,
+    current_ma              : usize,
+    current_max_current     : usize,
+    current_dc_enabled      : bool,
+    current_relay_enabled   : bool,
+    current_cc              : bool,
+
+
+    updated_max_current     : usize,
+    updated_dc_enabled      : bool,
+    updated_relay_enabled   : bool,
+
+    pc8574                  : PC8754,
+    ina219                  : INA219,
+    mcp4725                 : MCP4725,
+
+    obs                     : Option<&'a main_loop <'a>>,
+}
 //-----------------------------------------------------------
-impl  <'a> main_loop  <'a>
+impl   <'a> i2c_task  <'a>
 {    
     pub fn trampoline( param : *mut c_void)
     {
         unsafe {
-            let me:  &mut main_loop = &mut (*(param as *mut main_loop));
+            let me:  &mut i2c_task = &mut (*(param as *mut i2c_task));
             me.run_slave_task();
         }
       
     }
   
+    pub fn new() -> Self
+    {
+        i2c_task{
+                //-- slave thread --
+                pc8574      : PC8754::new(PS_I2C_INSTANCE, IO_EXPANDER_ADDRESS as u8),
+                ina219      : INA219::new(PS_I2C_INSTANCE as usize, INA219_ADDRESS as u8,  100*1000, INA219_SHUNT_VALUE ,3),
+                mcp4725     : MCP4725::new( PS_I2C_INSTANCE as usize, MCP4725_ADDRESS , 100*1000),
+                current_volt            : 0.,
+                current_ma              : 0,
+                current_max_current     : 200,
+                current_dc_enabled      : false,
+                current_relay_enabled   : false,
+                current_cc              : false,
 
-
+                updated_max_current     : 200,
+                updated_dc_enabled      : false,
+                updated_relay_enabled   : false,
+                obs                     : None, 
+        }
+    }
+    //
+    //
+    //
+    pub fn set_observer(&mut self,  obs : &main_loop)
+    {
+        
+      //  self.obs = Some(obs);
+    }
     fn internal_notify(&mut self, event : PeripheralEvent)
     {        
-        self.notify(event);
+    //    self.notify(event);
     }
 
     //----------------------

@@ -2,7 +2,7 @@ mod utils;
 mod slave_task;
 extern crate alloc;
 use alloc::boxed::Box;
-
+use cty::c_void;
 use rnarduino as rn;
 use rn::rnGpio::rnPin;
 use rn::rnGpio;
@@ -11,11 +11,8 @@ use rn::rnExti as rnExti;
 use rn::rnFastEventGroup::rnFastEventGroup;
 use rn::rnTimingAdc::rnTimingAdc;
 use crate::settings::*;
-use pcf8574::PC8754;
-use ina219::INA219;
-use mcp4725::MCP4725;
 
-
+use crate::app::slave_task::{i2c_task,PeripheralEvent, observer};
 
 type Display <'a> =  crate::gfx::display2::lnDisplay2 <'a>;
 
@@ -25,13 +22,6 @@ type Display <'a> =  crate::gfx::display2::lnDisplay2 <'a>;
  *
  *
  */
-enum PeripheralEvent
-{
-    CCChangeEvent=1,
-    VoltageChangeEvent=2,
-    CurrentChangeEvent=4,
-}
-
 struct main_loop <'a>
 {
     eventGroup              : rnFastEventGroup,
@@ -40,42 +30,29 @@ struct main_loop <'a>
     pins                    : [rnPin; 2] ,
     outputEnabled           : bool,
     display                 : Display <'a>,
-
-    pc8574                  : PC8754,
-    ina219                  : INA219,
-    mcp4725                 : MCP4725,
-
-
-    // slave task part
-    current_volt            : f32,
-    current_ma              : usize,
-    current_max_current     : usize,
-    current_dc_enabled      : bool,
-    current_relay_enabled   : bool,
-    current_cc              : bool,
-
-
-    updated_max_current     : usize,
-    updated_dc_enabled      : bool,
-    updated_relay_enabled   : bool,
+    control                 : i2c_task <'a> ,
 
 }
-
-//---------------------------------
-impl  <'a> main_loop  <'a>
+impl <'a> observer for main_loop <'a>
 {
-    //---- notify----
-    fn notify(&mut self, event :  PeripheralEvent)
+    fn notify(&mut self, event : PeripheralEvent)
     {
         self.eventGroup.setEvents(event as u32);
     }
+}
+//---------------------------------
+impl  <'a> main_loop  <'a>
+{
     //---- init----
     fn init(&mut self)
     {
         self.display.init();
-        self.eventGroup.takeOwnership();
-        // start the i2c task
-        self.start_slave_task();
+        self.eventGroup.takeOwnership();    
+
+        self.control.set_observer(self);            
+        
+        self.control.start_slave_task();
+        
         // create adc
         self.adc.setSource(3,3,1000,2,self.pins.as_ptr() );
         //
@@ -89,8 +66,8 @@ impl  <'a> main_loop  <'a>
             }
         }
         // ok enable the DC/DC and shutdown the Relay
-        self.set_output_enable(false);
-        self.set_dcdc_enable(true);
+        self.control.set_output_enable(false);
+        self.control.set_dcdc_enable(true);
         rnGpio::digital_write(PIN_LED,true);
     }
 
@@ -104,21 +81,21 @@ impl  <'a> main_loop  <'a>
         {
            let ev : u32 = self.eventGroup.waitEvents( 0xff , 100);
 
-           let   current: usize=   self.current_ma();
-           let   cc     : bool =   self.cc_limited();
+           let   current: usize=   self.control.current_ma();
+           let   cc     : bool =   self.control.cc_limited();
            let mut voltage : f32 ;
 
            if (ev & EnableButtonEvent)!=0
            {
               rnGpio::digital_write(PIN_LED,!self.outputEnabled); // active low
-              self.set_output_enable(self.outputEnabled);
+              self.control.set_output_enable(self.outputEnabled);
 
               rn::rnOsHelper::rnDelay(150); // dumb anti bounce
               rnExti::enableInterrupt(PIN_SWITCH);
               rn::rnOsHelper::rnDelay(150); // dumb anti bounce
            }
            // Display voltage & current
-           voltage=self.voltage();                  
+           voltage=self.control.voltage();                  
            
            if  (ev & (PeripheralEvent::VoltageChangeEvent as u32))!=0
            {
@@ -162,7 +139,7 @@ impl  <'a> main_loop  <'a>
                {
                   d=0.;
                }
-              self.set_max_current(d as usize); // convert maxCurrent to the mcp voltage to control max current
+              self.control.set_max_current(d as usize); // convert maxCurrent to the mcp voltage to control max current
               self.display.display_max_current(maxCurrent as usize);
            }
         }
@@ -200,21 +177,8 @@ impl  <'a> main_loop  <'a>
                 outputEnabled: false,
                 display     : Display::new(),
 
+                control     : i2c_task::new(),
 
-                //-- slave thread --
-                pc8574      : PC8754::new(PS_I2C_INSTANCE, IO_EXPANDER_ADDRESS as u8),
-                ina219      : INA219::new(PS_I2C_INSTANCE as usize, INA219_ADDRESS as u8,  100*1000, INA219_SHUNT_VALUE ,3),
-                mcp4725     : MCP4725::new( PS_I2C_INSTANCE as usize, MCP4725_ADDRESS , 100*1000),
-                current_volt            : 0.,
-                current_ma              : 0,
-                current_max_current     : 200,
-                current_dc_enabled      : false,
-                current_relay_enabled   : false,
-                current_cc              : false,
-
-                updated_max_current     : 200,
-                updated_dc_enabled      : false,
-                updated_relay_enabled   : false,
         }
     }
 }
