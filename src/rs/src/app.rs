@@ -12,8 +12,7 @@ use rn::rnFastEventGroup::rnFastEventGroup;
 use rn::rnTimingAdc::rnTimingAdc;
 use crate::settings::*;
 
-use crate::app::slave_task::{i2c_task,PeripheralEvent, observer};
-
+use crate::app::slave_task::{i2c_task,PeripheralEvent};
 type Display <'a> =  crate::gfx::display2::lnDisplay2 <'a>;
 
 /**
@@ -33,16 +32,22 @@ struct main_loop <'a>
     control                 : i2c_task ,
 
 }
-impl <'a> observer for main_loop <'a>
+//---------------------------------
+impl  <'a> main_loop  <'a>
 {
     fn notify(&mut self, event : PeripheralEvent)
     {
         self.eventGroup.setEvents(event as u32);
     }
-}
-//---------------------------------
-impl  <'a> main_loop  <'a>
-{
+    fn callback_trampoline( cookie: *mut c_void, event : PeripheralEvent)
+    {
+        unsafe
+        {
+            let p  = ( cookie as *mut main_loop).as_mut();
+            p.expect("oops").notify(event);
+        }        
+    }
+
     //---- init----
     fn init(&mut self)
     {
@@ -50,8 +55,7 @@ impl  <'a> main_loop  <'a>
         self.eventGroup.takeOwnership();    
 
         let me = self as *mut  main_loop as *mut c_void;
-        self.control.set_observer(me);
-        
+        self.control.set_observer(Self::callback_trampoline, me);        
         self.control.start_slave_task();
         
         // create adc
@@ -66,27 +70,43 @@ impl  <'a> main_loop  <'a>
                 self.stop_due_to_low_voltage()
             }
         }
-        // ok enable the DC/DC and shutdown the Relay
+        // ok enable the DC/DC and make sure the relay is off
         self.control.set_output_enable(false);
         self.control.set_dcdc_enable(true);
+        // turn off the front button
         rnGpio::digital_write(PIN_LED,true);
     }
-
+    ///
+    fn is_set(data: u32, ev : PeripheralEvent) -> bool
+    {
+        if (data &  (ev as u32))!=0
+        {
+            return true;
+        }
+        false
+    }
+    fn abs_diff( a: usize, b: usize )-> usize
+    {
+        if a>b
+        {
+            return a-b;
+        }
+        b-a
+    }
     /**
      *  main loop
      */
     fn run(&mut self)
     {
-        let mut lastMaxCurrent = -1;
+        let mut lastMaxCurrent = 0;
         loop
         {
-           let ev : u32 = self.eventGroup.waitEvents( 0xff , 100);
-
+           let   ev : u32 = self.eventGroup.waitEvents( 0xff , 100);
            let   current: usize=   self.control.current_ma();
            let   cc     : bool =   self.control.cc_limited();
-           let mut voltage : f32 ;
+           let mut voltage : f32 = self.control.voltage();
 
-           if (ev & EnableButtonEvent)!=0
+           if Self::is_set(ev, PeripheralEvent::EnableButtonEvent)
            {
               rnGpio::digital_write(PIN_LED,!self.outputEnabled); // active low
               self.control.set_output_enable(self.outputEnabled);
@@ -95,28 +115,26 @@ impl  <'a> main_loop  <'a>
               rnExti::enableInterrupt(PIN_SWITCH);
               rn::rnOsHelper::rnDelay(150); // dumb anti bounce
            }
-           // Display voltage & current
-           voltage=self.control.voltage();                  
            
-           if  (ev & (PeripheralEvent::VoltageChangeEvent as u32))!=0
+           // Display voltage & current
+           if Self::is_set(ev, PeripheralEvent::VoltageChangeEvent)
            {
                let mut correction: f32 =WIRE_RESISTANCE_MOHM as f32;
                correction=correction*(current as f32);
                correction/=1000000.;
                voltage-=correction;
                self.display.display_voltage( cc,  voltage);
-
                let mut power : f32 =voltage*(current as f32);
                power/=1000.;
                self.display.display_power( cc,  power);
 
            }
-           if false
-           //if((ev & (i2c_rs_task::lni2c_rs_task_SignalChange::CurrentChangeEvent as u32) ) !=0 )//(lni2c_rs_task::CurrentChangeEvent)) != 0)
+           if Self::is_set(ev, PeripheralEvent::CurrentChangeEvent)
            {
               self.display.display_current(current as usize);
            }
 
+           //  Read ADC to get maxCurrent and vbat
            let (sbat, maxCurrent) = self.run_adc( );
            if sbat < PS_MIN_VBAT_CRIT
            {
@@ -125,12 +143,9 @@ impl  <'a> main_loop  <'a>
            self.display.display_Vbat( sbat);
 
            // manage current Limiting
-           let mut delta: i32 =lastMaxCurrent- maxCurrent;
-           if delta<0
-           {
-              delta=-delta;
-           }
-           if delta>10
+           // Read the ADC to get the input and program new max current 
+           // if it changed
+           if Self::abs_diff( lastMaxCurrent, maxCurrent) > 10
            {
                lastMaxCurrent=maxCurrent;
                let mut d: f32 = maxCurrent as f32;
@@ -154,10 +169,10 @@ impl  <'a> main_loop  <'a>
     {
       self.outputEnabled =!self.outputEnabled;
       rnExti::disableInterrupt(PIN_SWITCH);
-      self.eventGroup.setEvents(EnableButtonEvent);
+      self.eventGroup.setEvents(PeripheralEvent::EnableButtonEvent as u32);
     }
     /*
-
+        Trampoline from C to class
     */
     pub extern "C" fn onOffCallback(_pin: rnPin, cookie: *mut cty::c_void)  -> ()
     {
@@ -177,7 +192,6 @@ impl  <'a> main_loop  <'a>
                 pins        :  [PS_PIN_VBAT , PS_PIN_MAX_CURRENT] , // PA0 + PA1
                 outputEnabled: false,
                 display     : Display::new(),
-
                 control     : i2c_task::new(),
 
         }
@@ -217,6 +231,4 @@ pub extern "C" fn rnLoop() -> ()
         boxed2.init();
         boxed2.run();
 }
-
-
 // EOF

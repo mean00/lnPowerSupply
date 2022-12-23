@@ -1,24 +1,29 @@
+/**
+ *  This is the slave task that periodically polls the peripherals on the i2c bus 
+ * to get voltage, current, are we in cc mode
+ *  It also accepts command that are sent trough the updated_vars
+ *  the task enforces these commands in its own context a little bit later
+ * 
+ */
+
 use crate::settings::*;
 extern crate alloc;
-use alloc::boxed::Box;
-use crate::app::main_loop;
 use rnarduino::rnOsHelper::{rnCreateTask,rnTaskEntry,rnDelay};
 use cty::c_void;
 use pcf8574::PC8754;
 use ina219::INA219;
 use mcp4725::MCP4725;
 
+pub type peripheral_callback =  fn( cookie: *mut c_void, event : PeripheralEvent);
+
 pub enum PeripheralEvent
 {
-    CCChangeEvent=1,
-    VoltageChangeEvent=2,
-    CurrentChangeEvent=4,
+    CCChangeEvent     = 1,
+    VoltageChangeEvent= 2,
+    CurrentChangeEvent= 4,
+    EnableButtonEvent = 8,
 }
 
-pub trait observer
-{
-    fn notify(&mut self, event : PeripheralEvent);
-}
 
 
 pub struct i2c_task 
@@ -40,7 +45,8 @@ pub struct i2c_task
     ina219                  : INA219,
     mcp4725                 : MCP4725,
 
-    obs                     : Option<*mut  c_void>,
+    obs                     : Option<peripheral_callback>,
+    obs_data                : Option<*mut  c_void>,
 }
 //-----------------------------------------------------------
 impl   <'a> i2c_task  
@@ -72,27 +78,24 @@ impl   <'a> i2c_task
                 updated_dc_enabled      : false,
                 updated_relay_enabled   : false,
                 obs                     : None, 
+                obs_data                : None, 
         }
     }
     //
     //
     //
-    pub fn set_observer(&mut self,  obs : *mut  c_void)
+    pub fn set_observer(&mut self,  func : peripheral_callback,  data : *mut  c_void)
     {        
-        self.obs = Some(obs);
+        self.obs = Some(func);
+        self.obs_data = Some(data);
     }
     fn internal_notify(&mut self, event : PeripheralEvent)
     {        
         if let Some(x) = self.obs
         {
-            unsafe
-            {
-                let p  = (x as *mut main_loop).as_mut();
-                p.expect("oops").notify(event);
-            }
-        }
+            (x)( self.obs_data.unwrap(), event);
+        }      
     }
-
     //----------------------
     // This will actually look after sensors
     // and enforce the changes
