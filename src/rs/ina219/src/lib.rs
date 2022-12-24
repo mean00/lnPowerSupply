@@ -133,7 +133,13 @@ impl INA219
         {
             return 0; // we dont support negative
         }
-        (current as usize+5)/10
+        let ma = (current as usize+5)/10;
+        // round down by 2mA
+        if ma>2
+        {
+            return ma-2;
+        }
+        0
     }
     fn inc_scaler(&mut self)
     {
