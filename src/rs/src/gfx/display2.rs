@@ -46,7 +46,7 @@ use crate::gfx::waree12::Waree12pt7b                     as small_font;
 use crate::gfx::robotoLight28::Roboto_Light28pt7b        as med_font;
 use crate::gfx::robotoslab48::RobotoSlab_SemiBold48pt7b  as big_font;
 
-
+const BITMAP_BATS : [&[u8];3]=[ &crate::gfx::bat1::BITMAP_HS,  &crate::gfx::bat2::BITMAP_HS,  &crate::gfx::bat3::BITMAP_HS];
 
 const FAST : u32 = 1;
 
@@ -142,6 +142,28 @@ impl  lnDisplay2  <'_>
     pub  fn display_Vbat(&mut self,vbat: f32) {
         self.print1f("Bat:",vbat);
         self.lcd_print(SmallFont, 200,318, VBAT_LINE);    
+        
+        let index;
+        let color : u16;
+        //let mut vbat : f32 = 17.;
+        if vbat > 19.5
+        {
+            index = 2;
+            color = GREEN;
+        }else
+        {
+            if vbat > 18.0
+            {
+                index = 1;
+                color = YELLOW;
+            }else {
+                index = 0;
+                color = RED;
+            }
+        }
+        self.ili.drawHSBitmap(crate::gfx::bat1::WIDTH , crate::gfx::bat1::HEIGHT ,
+            MAIN_COLUMN, 220, 
+             color, 0, BITMAP_BATS[index]); //&crate::gfx::bat1::BITMAP_HS);
     }
     
     pub  fn display_current(&mut self,ma: usize) {
