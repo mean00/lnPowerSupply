@@ -167,14 +167,14 @@ impl  <'a> main_loop  <'a>
      */
     fn pushed(&mut self)
     {
-      self.outputEnabled =!self.outputEnabled;
+      self.outputEnabled = !self.outputEnabled;
       rnExti::disableInterrupt(PIN_SWITCH);
       self.eventGroup.setEvents(PeripheralEvent::EnableButtonEvent as u32);
     }
     /*
         Trampoline from C to class
     */
-    pub extern "C" fn onOffCallback(_pin: rnPin, cookie: *mut cty::c_void)  -> ()
+    pub extern "C" fn onOffCallback(_pin: rnPin, cookie: *mut cty::c_void)
     {
       let p: &mut main_loop ;
       p= unsafe { &mut *(cookie as *mut main_loop) };
@@ -199,7 +199,7 @@ impl  <'a> main_loop  <'a>
 }
 
 #[no_mangle]
-pub extern "C" fn rnInit() -> ()
+pub extern "C" fn rnInit()
 {
    rnLogger("Setuping up Power Supply...\n");
 
@@ -217,7 +217,7 @@ pub extern "C" fn rnInit() -> ()
  *
  */
 #[no_mangle]
-pub extern "C" fn rnLoop() -> ()
+pub extern "C" fn rnLoop()
 {
         let r  = main_loop::new() ; //&mut sl);
         let boxed : Box<main_loop> = Box::new(r);

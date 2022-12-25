@@ -150,17 +150,15 @@ impl  lnDisplay2  <'_>
         {
             index = 2;
             color = GREEN;
-        }else
-        {
-            if vbat > 18.0
+        }else if vbat > 18.0
             {
                 index = 1;
                 color = YELLOW;
-            }else {
+            }else{
                 index = 0;
                 color = RED;
             }
-        }
+        
         self.ili.draw_bitmap_hs(crate::gfx::bat1::WIDTH , crate::gfx::bat1::HEIGHT ,
             MAIN_COLUMN, 220, 
              color, 0, BITMAP_BATS[index]); //&crate::gfx::bat1::BITMAP_HS);
