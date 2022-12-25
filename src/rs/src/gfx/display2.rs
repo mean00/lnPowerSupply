@@ -161,7 +161,7 @@ impl  lnDisplay2  <'_>
                 color = RED;
             }
         }
-        self.ili.drawHSBitmap(crate::gfx::bat1::WIDTH , crate::gfx::bat1::HEIGHT ,
+        self.ili.draw_bitmap_hs(crate::gfx::bat1::WIDTH , crate::gfx::bat1::HEIGHT ,
             MAIN_COLUMN, 220, 
              color, 0, BITMAP_BATS[index]); //&crate::gfx::bat1::BITMAP_HS);
     }
