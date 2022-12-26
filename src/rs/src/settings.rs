@@ -5,7 +5,7 @@
 #![allow(unused_parens)]
 
 use rnarduino as rn;
-use rn::rnGpio::rnPin as rnPin;
+use rn::rn_gpio::rnPin as rnPin;
 
 pub const PS_I2C_INSTANCE    : usize =  1;
 

@@ -8,7 +8,7 @@
 
 use crate::settings::*;
 extern crate alloc;
-use rnarduino::rnOsHelper::{rnCreateTask,rnTaskEntry,rnDelay};
+use rnarduino::rn_os_helper::{rn_create_task,rnTaskEntry,delay_ms};
 use cty::c_void;
 use pcf8574::PC8754;
 use ina219::INA219;
@@ -107,7 +107,7 @@ impl   <'a> i2c_task
         self.mcp4725.set_voltage(200); // default low value
         loop
         {
-            rnDelay(10); 
+            delay_ms(10); 
             let voltage =  self.ina219.get_voltage_v();
             if voltage != self.current_volt
             {
@@ -153,7 +153,7 @@ impl   <'a> i2c_task
     pub fn start_slave_task(&mut self) //,  cb : &'a dyn peripheral_notify)
     {             
         let myself =  self as *mut _ as *mut c_void;
-        rnCreateTask( &(Self::trampoline as rnTaskEntry) , "i2c",I2C_TASK_PRIORITY, 1024, myself);
+        rn_create_task( &(Self::trampoline as rnTaskEntry) , "i2c",I2C_TASK_PRIORITY, 1024, myself);
     }
     pub fn  voltage(&mut self) -> f32
     {

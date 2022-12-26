@@ -21,7 +21,7 @@ impl  <'a> main_loop  <'a>
     pub fn run_adc(&mut self) -> (f32, usize) 
     {
        
-       self.adc.multiRead(ADC_SAMPLE as i32 ,self.output.as_mut_ptr() ); 
+       self.adc.multi_read(ADC_SAMPLE as i32 ,self.output.as_mut_ptr() ); 
        let mut max0 : usize =0;
        let mut max1 : usize =0;
        

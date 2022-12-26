@@ -21,13 +21,13 @@ const UNITS_OFFSET      : usize  = 100;
 
 use rnarduino as rn;
 
-use rn::rnGpio as rnGpio;
-use rn::rnGpio::rnPin as rnPin;
-use rn::rnExti as rnExti;
-use rn::rnOsHelper::rnLogger as rnLogger;
-use rnarduino::rnSpi::rnPin::{NoPin};
-use rnarduino::rnSpi::rnSpiBitOrder::*;
-use rnarduino::rnSpi::rnSPISettings;
+use rn::rn_gpio as rnGpio;
+use rn::rn_gpio::rnPin as rnPin;
+use rn::rn_exti as rnExti;
+use rn::rn_os_helper::log as rnLogger;
+use rnarduino::rn_spi::rnPin::{NoPin};
+use rnarduino::rn_spi::rnSpiBitOrder::*;
+use rnarduino::rn_spi::rnSPISettings;
 
 use ili9341::ili9341::Ili9341 as Ili9341;
 use lnspi_ili9341::spi_ili9341 as spi_ili9341;
@@ -83,7 +83,7 @@ impl  lnDisplay2  <'_>
             dMode : 0, 
             pinCS : rnPin::NoPin};
    
-         let mut spi = rn::rnSpi::rnSPI::new(0,36*1000*1000);
+         let mut spi = rn::rn_spi::rnSPI::new(0,36*1000*1000);
          spi.begin();
          spi.begin_transaction(&transaction);
          let mut ili_access = Box::new(spi_ili9341::new(spi, ILI_PIN_CS, ILI_PIN_DC,ILI_PIN_RESET));

@@ -1,7 +1,7 @@
 #![no_std]
 
 
-use rnarduino::rnI2C::rnI2C as rnI2C;
+use rnarduino::rn_i2c::rnI2C as rnI2C;
 pub const PC8754_DEFAULT_ADDRESS  : u8 = 0x20;
 
 /**

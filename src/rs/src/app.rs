@@ -4,12 +4,11 @@ extern crate alloc;
 use alloc::boxed::Box;
 use cty::c_void;
 use rnarduino as rn;
-use rn::rnGpio::rnPin;
-use rn::rnGpio;
-use rn::rnOsHelper::*;
-use rn::rnExti as rnExti;
-use rn::rnFastEventGroup::rnFastEventGroup;
-use rn::rnTimingAdc::rnTimingAdc;
+use rn::rn_gpio::{rnPin,digital_write, pinMode};
+use rn::rn_exti as rnExti;
+use rn::rn_fast_event_group::rnFastEventGroup;
+use rn::rn_adc_timer::rnTimingAdc;
+use rn::rn_os_helper::delay_ms;
 use crate::settings::*;
 
 use crate::app::slave_task::{i2c_task,PeripheralEvent};
@@ -23,7 +22,7 @@ type Display <'a> =  crate::gfx::display2::lnDisplay2 <'a>;
  */
 struct main_loop <'a>
 {
-    eventGroup              : rnFastEventGroup,
+    event_group              : rnFastEventGroup,
     adc                     : rnTimingAdc,
     output                  : [u16; ADC_SAMPLE*2],
     pins                    : [rnPin; 2] ,
@@ -37,7 +36,7 @@ impl  <'a> main_loop  <'a>
 {
     fn notify(&mut self, event : PeripheralEvent)
     {
-        self.eventGroup.setEvents(event as u32);
+        self.event_group.set_events(event as u32);
     }
     fn callback_trampoline( cookie: *mut c_void, event : PeripheralEvent)
     {
@@ -52,14 +51,14 @@ impl  <'a> main_loop  <'a>
     fn init(&mut self)
     {
         self.display.init();
-        self.eventGroup.takeOwnership();    
+        self.event_group.take_ownership();    
 
         let me = self as *mut  main_loop as *mut c_void;
         self.control.set_observer(Self::callback_trampoline, me);        
         self.control.start_slave_task();
         
         // create adc
-        self.adc.setSource(3,3,1000,2,self.pins.as_ptr() );
+        self.adc.set_source(3,3,1000,2,self.pins.as_ptr() );
         //
         // Check we are not in low battery mode from the start
         //---
@@ -74,7 +73,7 @@ impl  <'a> main_loop  <'a>
         self.control.set_output_enable(false);
         self.control.set_dcdc_enable(true);
         // turn off the front button
-        rnGpio::digital_write(PIN_LED,true);
+        rn::rn_gpio::digital_write(PIN_LED,true);
     }
     ///
     fn is_set(data: u32, ev : PeripheralEvent) -> bool
@@ -101,19 +100,19 @@ impl  <'a> main_loop  <'a>
         let mut lastMaxCurrent = 0;
         loop
         {
-           let   ev : u32 = self.eventGroup.waitEvents( 0xff , 100);
+           let   ev : u32 = self.event_group.wait_events( 0xff , 100);
            let   current: usize=   self.control.current_ma();
            let   cc     : bool =   self.control.cc_limited();
            let mut voltage : f32 = self.control.voltage();
 
            if Self::is_set(ev, PeripheralEvent::EnableButtonEvent)
            {
-              rnGpio::digital_write(PIN_LED,!self.outputEnabled); // active low
+              rn::rn_gpio::digital_write(PIN_LED,!self.outputEnabled); // active low
               self.control.set_output_enable(self.outputEnabled);
 
-              rn::rnOsHelper::rnDelay(150); // dumb anti bounce
-              rnExti::enableInterrupt(PIN_SWITCH);
-              rn::rnOsHelper::rnDelay(150); // dumb anti bounce
+              delay_ms(150); // dumb anti bounce
+              rn::rn_exti::enable_interrupt(PIN_SWITCH);
+              delay_ms(150); // dumb anti bounce
            }
            
            // Display voltage & current
@@ -168,8 +167,8 @@ impl  <'a> main_loop  <'a>
     fn pushed(&mut self)
     {
       self.outputEnabled = !self.outputEnabled;
-      rnExti::disableInterrupt(PIN_SWITCH);
-      self.eventGroup.setEvents(PeripheralEvent::EnableButtonEvent as u32);
+      rn::rn_exti::disable_interrupt(PIN_SWITCH);
+      self.event_group.set_events(PeripheralEvent::EnableButtonEvent as u32);
     }
     /*
         Trampoline from C to class
@@ -186,7 +185,7 @@ impl  <'a> main_loop  <'a>
     {
         main_loop
         {
-                eventGroup  :  rnFastEventGroup::new(),
+                event_group :  rnFastEventGroup::new(),
                 adc         :  rnTimingAdc::new(0),
                 output      :  [0;16],
                 pins        :  [PS_PIN_VBAT , PS_PIN_MAX_CURRENT] , // PA0 + PA1
@@ -201,14 +200,14 @@ impl  <'a> main_loop  <'a>
 #[no_mangle]
 pub extern "C" fn rnInit()
 {
-   rnLogger("Setuping up Power Supply...\n");
+   rn::rn_os_helper::log("Setuping up Power Supply...\n");
 
-   rnGpio::pinMode(PS_PIN_VBAT          ,rnGpio::rnGpioMode::lnADC_MODE);
-   rnGpio::pinMode(PS_PIN_MAX_CURRENT   ,rnGpio::rnGpioMode::lnADC_MODE);
-   rnGpio::pinMode(rnPin::PC13          ,rnGpio::rnGpioMode::lnOUTPUT);
-   rnGpio::digital_write(PIN_LED            ,true);
-   rnGpio::pinMode(PIN_LED                  ,rnGpio::rnGpioMode::lnOUTPUT);
-   rnGpio::pinMode(PIN_SWITCH               ,rnGpio::rnGpioMode::lnINPUT_PULLDOWN);
+   pinMode(PS_PIN_VBAT          ,rn::rn_gpio::rnGpioMode::lnADC_MODE);
+   pinMode(PS_PIN_MAX_CURRENT   ,rn::rn_gpio::rnGpioMode::lnADC_MODE);
+   pinMode(rnPin::PC13          ,rn::rn_gpio::rnGpioMode::lnOUTPUT);
+   digital_write(PIN_LED            ,true);
+   pinMode(PIN_LED                  ,rn::rn_gpio::rnGpioMode::lnOUTPUT);
+   pinMode(PIN_SWITCH               ,rn::rn_gpio::rnGpioMode::lnINPUT_PULLDOWN);
 }
 
 /**
@@ -224,8 +223,8 @@ pub extern "C" fn rnLoop()
         let mut boxed2 : Box<main_loop>;
 
         let ptr = Box::into_raw(boxed);
-        rnExti::attachInterrupt(PIN_SWITCH , rnExti::rnEdge::LN_EDGE_FALLING, Some(main_loop::onOffCallback) ,    ptr as  *mut   cty::c_void) ;
-        rnExti::enableInterrupt(PIN_SWITCH);
+        rn::rn_exti::attach_interrupt(PIN_SWITCH , rnExti::rnEdge::LN_EDGE_FALLING, Some(main_loop::onOffCallback) ,    ptr as  *mut   cty::c_void) ;
+        rn::rn_exti::enable_interrupt(PIN_SWITCH);
         unsafe {
             boxed2 = Box::from_raw(ptr);
          }

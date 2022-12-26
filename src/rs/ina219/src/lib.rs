@@ -1,11 +1,11 @@
 #![no_std]
 #![allow(dead_code)]
 
-use rnarduino::rnI2C::rnI2C as rnI2C;
+use rnarduino::rn_i2c::rnI2C as rnI2C;
 mod ina219_regs;
 pub const INA219_ADDRESS  : u8 = 0x40;
 use crate::ina219_regs::*;
-use rnarduino::rnOsHelper::rnDelay;
+use rnarduino::rn_os_helper::delay_ms;
 
 #[derive(Copy, Clone, PartialEq, PartialOrd)]
 pub enum  PGA
@@ -119,7 +119,7 @@ impl INA219
         if redo 
         {
               self.reconfigure();    
-              rnDelay(5);
+              delay_ms(5);
               value = self.get_bus_voltage_raw() as usize;
               flat=value_to_volt(value);
         }
