@@ -10,7 +10,7 @@ edition = "2021"
 cty = "0.2.2"
 rnarduino = { path = "../../lnArduino/rust/rnArduino" }
 ili9341 = { path = "../../externals/simplerILI9341/rust/ili9341", features =["hs"]}
-lnspi_ili9341 =     { path = "../../externals/simplerILI9341/rust/ln_spi"}
+lnspi_ili9341 =     { path = "../../externals/simplerILI9341/rust/demo_ili9341_320x240_spi"}
 ufmt = "*"
 heapless = { version = "*", features = ["ufmt-impl"] }
 simpler_gfx= {git="https://github.com/mean00/simpler_gfx.git"}
