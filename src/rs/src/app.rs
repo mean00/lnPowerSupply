@@ -12,7 +12,14 @@ use rn::rn_os_helper::delay_ms;
 use crate::settings::*;
 
 use crate::app::slave_task::{i2c_task,PeripheralEvent};
-type Display <'a> =  crate::gfx::display2::lnDisplay2 <'a>;
+type Display <'a> =  rs_psu_gfx::gfx::display2::lnDisplay2 <'a>;
+
+use ili9341::ili9341_init_sequence::DSO_WAKEUP;
+use ili9341::ili9341_init_sequence::DSO_RESET;
+use lnspi_ili9341::spi_ili9341;
+use rnarduino::rn_spi::rnSPI;
+use rnarduino::rn_spi::rnSPISettings;
+use rnarduino::rn_spi::rnSpiBitOrder::SPI_MSBFIRST;
 
 /**
  *  A => shut volt / 10.2 => amp
@@ -183,14 +190,33 @@ impl  <'a> main_loop  <'a>
      */
     pub fn new()-> Self
     {
+        let transaction : rnSPISettings  = rnSPISettings{
+            speed: 36*1000*1000, 
+            bOrder : SPI_MSBFIRST, 
+            dMode : 0, 
+            pinCS : rnPin::NoPin};
+   
+   
+
+        let mut spi = rnSPI::new(0,36*1000*1000);
+        spi.begin();
+        spi.begin_transaction(&transaction);
+  
+        let mut ili_access = spi_ili9341::new(spi, ILI_PIN_CS, ILI_PIN_DC,ILI_PIN_RESET);
+        // init low level
+        ili_access.reset();
+        //ili_access.send_init_sequence(ST7735);
+        ili_access.send_init_sequence(DSO_RESET);
+        ili_access.send_init_sequence(DSO_WAKEUP);   
+  
         main_loop
         {
-                event_group :  rnFastEventGroup::new(),
+                event_group :  rnFastEventGroup::new( ),
                 adc         :  rnTimingAdc::new(0),
                 output      :  [0;16],
                 pins        :  [PS_PIN_VBAT , PS_PIN_MAX_CURRENT] , // PA0 + PA1
                 outputEnabled: false,
-                display     : Display::new(),
+                display     : Display::new(Box::new(ili_access)),
                 control     : i2c_task::new(),
 
         }
