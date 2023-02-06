@@ -1,0 +1,32 @@
+[package]
+name = "rs_psu_gfx"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+sim = []
+[dependencies]
+cty = "0.2.2"
+ili9341 = { path = "../../../../externals/simplerILI9341/rust/ili9341", features =["hs"]}
+ufmt = "*"
+heapless = { version = "*", features = ["ufmt-impl"] }
+simpler_gfx= {git="https://github.com/mean00/simpler_gfx.git"}
+
+[lib]
+name = "rs_psu_gfx"
+path = "src/lib.rs"
+crate-type = ["rlib"] # Creates static lib
+
+[profile.dev]
+codegen-units = 1
+debug = true
+lto = true
+opt-level       = 's'
+
+[profile.release]
+codegen-units = 1
+debug = true
+lto = true
+opt-level       = 's'

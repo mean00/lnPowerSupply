@@ -1,0 +1,35 @@
+[package]
+name = "ili_sim"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[[bin]]
+name = "ili_exec"
+path = "src/app.rs"
+#crate-type = ["staticlib"] # Creates static lib
+
+
+[dependencies]
+
+macroquad = "0.3"
+rs_psu_gfx = { version = "*" , path="../psu_gfx", features = ["sim"]}
+ili9341 = { path = "../../../../externals/simplerILI9341/rust/ili9341", features =["hs"]}
+
+[profile.dev]
+codegen-units = 1
+debug = true
+lto = false
+opt-level       = 's'
+
+[profile.release]
+codegen-units = 1
+debug = false
+lto = false
+opt-level       = 's'
+
+[profile.dev.package."*"]
+codegen-units   = 1
+opt-level       = "s"
+debug = true
+
