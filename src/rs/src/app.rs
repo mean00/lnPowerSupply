@@ -107,9 +107,10 @@ impl  <'a> main_loop  <'a>
         let mut lastMaxCurrent = 0;
         loop
         {
-           let   ev : u32 = self.event_group.wait_events( 0xff , 100);
-           let   current: usize=   self.control.current_ma();
-           let   cc     : bool =   self.control.cc_limited();
+           let mut gauge_update  : bool = false;
+           let ev : u32 = self.event_group.wait_events( 0xff , 100);
+           let current: usize=   self.control.current_ma();
+           let cc     : bool =   self.control.cc_limited();
            let mut voltage : f32 = self.control.voltage();
 
            if Self::is_set(ev, PeripheralEvent::EnableButtonEvent)
@@ -138,6 +139,7 @@ impl  <'a> main_loop  <'a>
            if Self::is_set(ev, PeripheralEvent::CurrentChangeEvent)
            {
               self.display.display_current(current as usize);
+              gauge_update = true;
            }
 
            //  Read ADC to get maxCurrent and vbat
@@ -163,6 +165,11 @@ impl  <'a> main_loop  <'a>
                }
               self.control.set_max_current(d as usize); // convert maxCurrent to the mcp voltage to control max current
               self.display.display_max_current(maxCurrent as usize);
+              gauge_update = true;
+           }
+           if gauge_update
+           {
+                self.display.display_current_percent(current as usize, maxCurrent as usize);
            }
         }
     }
