@@ -142,7 +142,7 @@ async fn main() {
 
         display.display_current_percent(percent as usize,101 as usize);        
         percent=percent+inc;
-        if percent>95 && inc>0
+        if percent>150 && inc>0
         {
             inc=-inc;
         }
