@@ -19,13 +19,13 @@ ili9341 = { path = "../../../../externals/simplerILI9341/rust/ili9341", features
 [profile.dev]
 codegen-units = 1
 debug = true
-lto = false
+lto = true
 opt-level       = 's'
 
 [profile.release]
 codegen-units = 1
 debug = false
-lto = false
+lto = true
 opt-level       = 's'
 
 [profile.dev.package."*"]
