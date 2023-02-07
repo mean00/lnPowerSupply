@@ -101,7 +101,6 @@ impl  lnDisplay2  <'_>
     
         self.ili.set_text_color(WHITE,BLACK);
 
-        self.ili.gauge(0,G_X,G_Y, R_I, R_E, YELLOW);
     }
   
     pub fn set_rotation( &mut self, rotation : usize)
