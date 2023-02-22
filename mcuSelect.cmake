@@ -10,7 +10,6 @@ IF(1) # ARM
     SET(LN_MCU_SPEED 96000000    CACHE INTERNAL "") #=> ok
           #      SET(LN_MCU_SPEED  72000000    CACHE INTERNAL "") #=> ok
     SET(LN_SPEC         "picolibc"   CACHE INTERNAL "") # if not set we use nano
-    SET(LN_ENABLE_USBD True CACHE INTERNAL "")
     SET(LN_BOOTLOADER_SIZE 0 CACHE INTERNAL "")
   ELSE()
       SET(LN_ARCH            "ARM" CACHE INTERNAL "")
@@ -26,7 +25,6 @@ IF(1) # ARM
         SET(LN_MCU_FLASH_SIZE  128   CACHE INTERNAL "")
         SET(LN_MCU_EEPROM_SIZE 4     CACHE INTERNAL "")
         SET(LN_BOOTLOADER_SIZE 0 CACHE INTERNAL "")
-        SET(LN_ENABLE_USBD True CACHE INTERNAL "")
       ENDIF()
       SET(LN_SPEC         "picolibc"   CACHE INTERNAL "") # if not set we use nano
   ENDIF()
