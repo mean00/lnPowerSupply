@@ -153,7 +153,7 @@ impl   <'a> i2c_task
     pub fn start_slave_task(&mut self) //,  cb : &'a dyn peripheral_notify)
     {             
         let myself =  self as *mut _ as *mut c_void;
-        rn_create_task( &(Self::trampoline as rnTaskEntry) , "i2c",I2C_TASK_PRIORITY, 1024, myself);
+        rn_create_task( &(Self::trampoline as rnTaskEntry) , "i2c",I2C_TASK_PRIORITY, I2C_STACK_SIZE, myself);
     }
     pub fn  voltage(&mut self) -> f32
     {

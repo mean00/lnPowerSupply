@@ -39,6 +39,7 @@ pub const MCP4725_ADDRESS             : u8 = 0x60;
 
 // Tasks 
 pub const I2C_TASK_PRIORITY : usize = 2;
+pub const I2C_STACK_SIZE : u32 = 1024;
 
 
 // VBAT limit
