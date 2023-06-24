@@ -60,7 +60,7 @@ i2cTask::~i2cTask()
 /**
  * 
  */
-i2cTask::i2cTask(signalCb *c) : lnI2cTask(c) , xTask("I2C",I2C_TASK_PRIORITY,256) 
+i2cTask::i2cTask(signalCb *c) : lnI2cTask(c) , xTask("I2C",I2C_TASK_PRIORITY,I2C_STACK_SIZE) 
 {
     Logger("Setuping up I2C Task...\n");
     

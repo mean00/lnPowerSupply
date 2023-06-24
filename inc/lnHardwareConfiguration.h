@@ -33,6 +33,7 @@
 
 // Tasks 
 #define I2C_TASK_PRIORITY 2
+#define I2C_STACK_SIZE    1024
 
 
 // VBAT limit
