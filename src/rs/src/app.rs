@@ -20,7 +20,8 @@ use lnspi_ili9341::spi_ili9341;
 use rnarduino::rn_spi::rnSPI;
 use rnarduino::rn_spi::rnSPISettings;
 use rnarduino::rn_spi::rnSpiBitOrder::SPI_MSBFIRST;
-
+use rnarduino::{lnLogger, lnLogger_init};
+lnLogger_init!();
 /**
  *  A => shut volt / 10.2 => amp
  *  102 mOhm
@@ -233,7 +234,7 @@ impl  <'a> main_loop  <'a>
 #[no_mangle]
 pub extern "C" fn rnInit()
 {
-   rn::rn_os_helper::log("Setuping up Power Supply...\n");
+   lnLogger!("Setuping up Power Supply...\n");
 
    pinMode(PS_PIN_VBAT          ,rn::rn_gpio::rnGpioMode::lnADC_MODE);
    pinMode(PS_PIN_MAX_CURRENT   ,rn::rn_gpio::rnGpioMode::lnADC_MODE);
