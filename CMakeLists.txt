@@ -17,7 +17,7 @@ SET(LN_ENABLE_I2C  ON CACHE INTERNAL "")
 SET(LN_ENABLE_SPI  ON CACHE INTERNAL "")
 
 
-IF(TRUE)
+IF(FALSE)
     SET(LN_LTO "-flto")
     SET(LN_LTO_RUST_FLAGS ="-Clinker-plugin-lto=yes -Clto=thin")
 ELSE()
