@@ -66,7 +66,7 @@ impl  <'a> main_loop  <'a>
         self.control.start_slave_task();
         
         // create adc
-        self.adc.set_source(3,3,1000,2,self.pins.as_ptr() );
+        self.adc.set_source(3,3,1000,&self.pins);
         //
         // Check we are not in low battery mode from the start
         //---
@@ -256,6 +256,7 @@ pub extern "C" fn rnLoop()
         let mut boxed2 : Box<main_loop>;
 
         let ptr = Box::into_raw(boxed);
+        // CROCO 
         rn::rn_exti::attach_interrupt(PIN_SWITCH , rnExti::rnEdge::LN_EDGE_FALLING, Some(main_loop::onOffCallback) ,    ptr as  *mut   cty::c_void) ;
         rn::rn_exti::enable_interrupt(PIN_SWITCH);
         unsafe {
