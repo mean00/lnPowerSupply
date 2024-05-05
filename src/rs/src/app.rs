@@ -5,7 +5,6 @@ use alloc::boxed::Box;
 use cty::c_void;
 use rnarduino as rn;
 use rn::rn_gpio::{rnPin,digital_write, pinMode};
-use rn::rn_exti as rnExti;
 use rn::rn_fast_event_group::rnFastEventGroup;
 use rn::rn_adc_timer::rnTimingAdc;
 use rn::rn_os_helper::delay_ms;
@@ -14,13 +13,13 @@ use crate::settings::*;
 use crate::app::slave_task::{i2c_task,PeripheralEvent};
 type Display <'a> =  rs_psu_gfx::gfx::display2::lnDisplay2 <'a>;
 
-use ili9341::ili9341_init_sequence::DSO_WAKEUP;
-use ili9341::ili9341_init_sequence::DSO_RESET;
+use ili9341::ili9341_init_sequence::{DSO_WAKEUP, DSO_RESET};
 use lnspi_ili9341::SpiIli9341;
-use rnarduino::rn_spi::rnSPI;
-use rnarduino::rn_spi::rnSPISettings;
-use rnarduino::rn_spi::rnSpiBitOrder::SPI_MSBFIRST;
+use rnarduino::rn_spi::{rnSPI,  rnSPISettings, rnSpiBitOrder::SPI_MSBFIRST};
 use rnarduino::{lnLogger, lnLogger_init};
+
+
+
 lnLogger_init!();
 /**
  *  A => shut volt / 10.2 => amp
@@ -256,8 +255,9 @@ pub extern "C" fn rnLoop()
         let mut boxed2 : Box<main_loop>;
 
         let ptr = Box::into_raw(boxed);
-        // CROCO 
-        rn::rn_exti::attach_interrupt(PIN_SWITCH , rnExti::rnEdge::LN_EDGE_FALLING, Some(main_loop::onOffCallback) ,    ptr as  *mut   cty::c_void) ;
+        //-----------------------------------------------
+        // CROCO rn::rn_exti::attach_interrupt(PIN_SWITCH , rnExti::rnEdge::LN_EDGE_FALLING, Some(main_loop::onOffCallback) ,    ptr as  *mut   cty::c_void) ;
+        //-----------------------------------------------
         rn::rn_exti::enable_interrupt(PIN_SWITCH);
         unsafe {
             boxed2 = Box::from_raw(ptr);

@@ -27,9 +27,7 @@ ENDIF()
 SET(LN_USB_NB_CDC  0 CACHE INTERNAL "")
 SET(LN_USB_NB_HID  0 CACHE INTERNAL "")
 SET(LN_USB_DFU_RUNTIME 1 CACHE INTERNAL "")
-
-OPTION(USE_USB                  "Enable USB support"                                FALSE)
-OPTION(USE_GD32F3               "Build for GD32F303"                                FALSE)
+SET(LN_ENABLE_USBD FALSE CACHE INTERNAL "")
 
 
 SET(AF_FOLDER  ${CMAKE_SOURCE_DIR}/lnArduino/)
@@ -61,60 +59,28 @@ include_directories(src)
 #_______________________
 # FPU
 #_______________________
-IF("${LN_ARCH}" STREQUAL "RISCV")
-    SET(FP_LIB rvfp)
-ELSEIF("${LN_ARCH}" STREQUAL "ARM")
+IF("${LN_ARCH}" STREQUAL "ARM")
     IF("${LN_MCU}" STREQUAL "M3")
         SET(FP_LIB qfpm3)
-    ENDIF("${LN_MCU}" STREQUAL "M3")
-ENDIF("${LN_ARCH}" STREQUAL "RISCV")
+    ENDIF()
+ENDIF()
 
 #_______________________
 #  Rust vs C++
 #_______________________
-IF(LN_ENABLE_RUST)
-    add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/src/rs)
-    include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/src/rs/cpp)
-    SET(START_CODE  ${CMAKE_CURRENT_SOURCE_DIR}/src/rs/cpp/lnPowerSupply_rust.cpp )
-    #SET(CPP_CODE    ${CMAKE_CURRENT_SOURCE_DIR}/src/rs/cpp/lnI2CTask.cpp )
-ELSE() # CPP version
-    SET(DSO_EXTRA_LIB simplerILI9341HS)
-    SET(SIMPLER_ILI9341_FONT_COMPRESSION ON CACHE INTERNAL "")
-    SET(SIMPLER_ILI9341_2BPP_SUPPORT     ON CACHE INTERNAL "")
-    SET(SIMPLER_ILI9341_4BPP_SUPPORT     ON CACHE INTERNAL "")
-    include_directories(externals/simplerILI9341/cpp/platformExample/lnArduino)
-    SET(ILI9341_DRIVER  platformExample/lnArduino/ili_lnSpi.cpp)
-    ADD_SUBDIRECTORY(externals/simplerILI9341/cpp)
-    include_directories(externals/simplerILI9341/cpp)
-
-    ADD_SUBDIRECTORY(externals/simpler_INA219)
-    include_directories(externals/simpler_INA219)
-    USE_LIBRARY(simplerMCP4725)
-    IF(LN_ENABLE_USBD)  
-        USE_LIBRARY(tinyUsb)
-        SET(EXTENSION "${EXTENSION}_USB")
-    ENDIF(LN_ENABLE_USBD)    
-    include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/inc)
-    include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/assets/fonts)
-    SET(START_CODE  src/cpp/lnPowerSupply.cpp )
-    SET(CPP_CODE    ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/lnI2CTask.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/lnDisplay.cpp  )
-
-ENDIF()  
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/src/rs/cpp)
+SET(START_CODE  ${CMAKE_CURRENT_SOURCE_DIR}/src/rs/cpp/lnPowerSupply_rust.cpp )
+#SET(CPP_CODE    ${CMAKE_CURRENT_SOURCE_DIR}/src/rs/cpp/lnI2CTask.cpp )
 #
 
 USE_LIBRARY(NeVerMind)
 
-GENERATE_GD32_FIRMWARE(lnPowerSupply ${START_CODE} ${CPP_CODE}  lnArduino/src/lnFreeRTOSDebug.cpp )
-IF(LN_ENABLE_USBD)
-    TARGET_LINK_LIBRARIES( lnPowerSupply  gd32_usb_usbd)
-ENDIF()
-
-IF(LN_ENABLE_RUST)
-    TARGET_LINK_LIBRARIES( lnPowerSupply  rsPowerSupply lnarduino_c_bindings )
-ELSE(LN_ENABLE_RUST)    
-    TARGET_LINK_LIBRARIES( lnPowerSupply  simplerILI9341 simpler_INA219 simplerMCP4725 ${DSO_EXTRA_LIB} )
-ENDIF(LN_ENABLE_RUST)
-
+GENERATE_GD32_FIRMWARE(lnPowerSupply ${START_CODE}  )
+HASH_GD32_FIRMWARE( lnPowerSupply )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/src/rs)
+TARGET_LINK_LIBRARIES( lnPowerSupply lnarduino_c_bindings )
+#TARGET_LINK_LIBRARIES( lnPowerSupply lnPowerSupply  )
+TARGET_LINK_LIBRARIES( lnPowerSupply rsPowerSupply )
 
 # Summary
 MESSAGE(STATUS "Configuration:")
@@ -125,10 +91,7 @@ MESSAGE(STATUS "\tUSB control enabled : ${LN_ENABLE_USBD}")
 
 
 #
-IF(LN_ENABLE_RUST)
-    SET(EXTENSION ${EXTENSION}_RUST)
-ELSE()
-ENDIF()
+SET(EXTENSION ${EXTENSION}_RUST)
 set_target_properties(lnPowerSupply PROPERTIES OUTPUT_NAME lnPowerSupply${EXTENSION})
 
 MESSAGE(STATUS "\tFinal name is ${EXTENSION}")
