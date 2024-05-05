@@ -1,9 +1,9 @@
 [submodule "lnArduino"]
 	path = lnArduino
 	url = ../lnArduino.git
-[submodule "externals/simplerILI9341"]
+[submodule "simplerILI9341"]
 	path = simplerILI9341
 	url = ../simplerILI9341.git
-[submodule "externals/simpler_INA219"]
+[submodule "simpler_INA219"]
 	path = simpler_INA219
 	url = ../simpler_INA219.git

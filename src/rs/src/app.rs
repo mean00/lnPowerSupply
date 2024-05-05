@@ -16,7 +16,7 @@ type Display <'a> =  rs_psu_gfx::gfx::display2::lnDisplay2 <'a>;
 
 use ili9341::ili9341_init_sequence::DSO_WAKEUP;
 use ili9341::ili9341_init_sequence::DSO_RESET;
-use lnspi_ili9341::spi_ili9341;
+use lnspi_ili9341::SpiIli9341;
 use rnarduino::rn_spi::rnSPI;
 use rnarduino::rn_spi::rnSPISettings;
 use rnarduino::rn_spi::rnSpiBitOrder::SPI_MSBFIRST;
@@ -204,18 +204,17 @@ impl  <'a> main_loop  <'a>
             dMode : 0, 
             pinCS : rnPin::NoPin};
    
-   
 
         let mut spi = rnSPI::new(0,36*1000*1000);
-        spi.begin();
-        spi.begin_transaction(&transaction);
+        spi.set(&transaction);
   
-        let mut ili_access = spi_ili9341::new(spi, ILI_PIN_CS, ILI_PIN_DC,ILI_PIN_RESET);
+        let mut ili_access = SpiIli9341::new(spi, ILI_PIN_CS, ILI_PIN_DC,ILI_PIN_RESET);
         // init low level
         ili_access.reset();
         //ili_access.send_init_sequence(ST7735);
         ili_access.send_init_sequence(DSO_RESET);
         ili_access.send_init_sequence(DSO_WAKEUP);   
+        ili_access.set_chip_id(0x9341);
   
         main_loop
         {
