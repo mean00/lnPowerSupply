@@ -6,7 +6,7 @@ use cty::c_void;
 use rnarduino as rn;
 use rn::rn_gpio::{rnPin,digital_write, pinMode};
 use rn::rn_fast_event_group::rnFastEventGroup;
-use rn::rn_adc_timer::rnTimingAdc;
+use rn::rn_timing_adc::rnTimingAdc;
 use rn::rn_os_helper::delay_ms;
 use crate::settings::*;
 
@@ -256,7 +256,7 @@ pub extern "C" fn rnLoop()
 
         let ptr = Box::into_raw(boxed);
         //-----------------------------------------------
-        // CROCO rn::rn_exti::attach_interrupt(PIN_SWITCH , rnExti::rnEdge::LN_EDGE_FALLING, Some(main_loop::onOffCallback) ,    ptr as  *mut   cty::c_void) ;
+        rn::rn_exti::attach_interrupt(PIN_SWITCH , rn::rn_exti::rnEdge::LN_EDGE_FALLING, Some(main_loop::onOffCallback) ,    ptr as  *mut   cty::c_void) ;
         //-----------------------------------------------
         rn::rn_exti::enable_interrupt(PIN_SWITCH);
         unsafe {
