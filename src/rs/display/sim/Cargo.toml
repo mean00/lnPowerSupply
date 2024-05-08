@@ -14,7 +14,7 @@ path = "src/app.rs"
 
 macroquad = "0.3"
 rs_psu_gfx = { version = "*" , path="../psu_gfx", features = ["sim"]}
-ili9341 = { path = "../../../../externals/simplerILI9341/rust/ili9341", features =["hs"]}
+ili9341 = { path = "../../../../simplerILI9341/rust/ili9341", features =["hs"]}
 
 [profile.dev]
 codegen-units = 1
