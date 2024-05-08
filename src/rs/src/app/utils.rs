@@ -3,7 +3,7 @@ use crate::settings::*;
 
 impl  <'a> main_loop  <'a>
 {
-   /**
+   /*
     * 
 
     */
@@ -34,13 +34,13 @@ impl  <'a> main_loop  <'a>
        let mut maxCurrent : usize ;
        
        vbat = max0 + ((ADC_SAMPLE-1)/2) ;
-       vbat = vbat /ADC_SAMPLE ;
+       vbat /= ADC_SAMPLE ;
  
        maxCurrent = (max1 ) + (((ADC_SAMPLE )-1)/2);
-       maxCurrent = maxCurrent/(ADC_SAMPLE );
+       maxCurrent /= ADC_SAMPLE ;
     
        let mut fvbat = vbat as f32;    
-       fvbat=fvbat*9.;
+       fvbat*=9.;
        fvbat/=1000.;
        
        maxCurrent=maxCurrent*maxCurrent;

@@ -16,6 +16,9 @@ use mcp4725::MCP4725;
 
 pub type peripheral_callback =  fn( cookie: *mut c_void, event : PeripheralEvent);
 
+use rnarduino::{lnLogger, lnLogger_init};
+lnLogger_init!();
+
 pub enum PeripheralEvent
 {
     CCChangeEvent     = 1,
@@ -65,8 +68,8 @@ impl   <'a> i2c_task
         i2c_task{
                 //-- slave thread --
                 pc8574      : PC8754::new(PS_I2C_INSTANCE, IO_EXPANDER_ADDRESS as u8),
-                ina219      : INA219::new(PS_I2C_INSTANCE as usize, INA219_ADDRESS as u8,  100*1000, INA219_SHUNT_VALUE ,3),
-                mcp4725     : MCP4725::new( PS_I2C_INSTANCE as usize, MCP4725_ADDRESS , 100*1000),
+                ina219      : INA219::new(PS_I2C_INSTANCE , INA219_ADDRESS ,  100*1000, INA219_SHUNT_VALUE ,3),
+                mcp4725     : MCP4725::new( PS_I2C_INSTANCE , MCP4725_ADDRESS , 100*1000),
                 current_volt            : 0.,
                 current_ma              : 0,
                 current_max_current     : 200,
@@ -115,6 +118,7 @@ impl   <'a> i2c_task
                 self.internal_notify(PeripheralEvent::VoltageChangeEvent);
             }
             let current = self.ina219.get_current_ma();
+            lnLogger!("current {} ma\n",current);
             if current!=self.current_ma
             {
                 self.current_ma = current;

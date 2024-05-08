@@ -82,7 +82,7 @@ impl  <'a> main_loop  <'a>
         // turn off the front button
         rn::rn_gpio::digital_write(PIN_LED,true);
     }
-    ///
+    //
     fn is_set(data: u32, ev : PeripheralEvent) -> bool
     {
         if (data &  (ev as u32))!=0
@@ -127,7 +127,7 @@ impl  <'a> main_loop  <'a>
            if Self::is_set(ev, PeripheralEvent::VoltageChangeEvent)
            {
                let mut correction: f32 =WIRE_RESISTANCE_MOHM as f32;
-               correction=correction*(current as f32);
+               correction *= current as f32;
                correction/=1000000.;
                voltage-=correction;
                self.display.display_voltage( cc,  voltage);
@@ -138,7 +138,7 @@ impl  <'a> main_loop  <'a>
            }
            if Self::is_set(ev, PeripheralEvent::CurrentChangeEvent)
            {
-              self.display.display_current(current as usize);
+              self.display.display_current(current );
               gauge_update = true;
            }
 
@@ -164,18 +164,18 @@ impl  <'a> main_loop  <'a>
                   d=0.;
                }
               self.control.set_max_current(d as usize); // convert maxCurrent to the mcp voltage to control max current
-              self.display.display_max_current(maxCurrent as usize);
+              self.display.display_max_current(maxCurrent );
               gauge_update = true;
            }
            if gauge_update
            {
-                self.display.display_current_percent(current as usize, maxCurrent as usize);
+                self.display.display_current_percent(current , maxCurrent );
            }
         }
     }
 
 
-    /**
+    /*
      *
      */
     fn pushed(&mut self)
@@ -189,8 +189,7 @@ impl  <'a> main_loop  <'a>
     */
     pub extern "C" fn onOffCallback(_pin: rnPin, cookie: *mut cty::c_void)
     {
-      let p: &mut main_loop ;
-      p= unsafe { &mut *(cookie as *mut main_loop) };
+      let p: &mut main_loop = unsafe { &mut *(cookie as *mut main_loop) };
       p.pushed();
     }
     /*
