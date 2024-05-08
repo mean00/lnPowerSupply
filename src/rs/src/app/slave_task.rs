@@ -1,4 +1,4 @@
-/**
+/*
  *  This is the slave task that periodically polls the peripherals on the i2c bus 
  * to get voltage, current, are we in cc mode
  *  It also accepts command that are sent trough the updated_vars
@@ -18,6 +18,9 @@ pub type peripheral_callback =  fn( cookie: *mut c_void, event : PeripheralEvent
 
 use rnarduino::{lnLogger, lnLogger_init};
 lnLogger_init!();
+
+extern "C" { fn lnp_c_hook()->(); }
+
 
 pub enum PeripheralEvent
 {
@@ -111,6 +114,7 @@ impl   <'a> i2c_task
         loop
         {
             delay_ms(10); 
+            unsafe { lnp_c_hook(); }
             let voltage =  self.ina219.get_voltage_v();
             if voltage != self.current_volt
             {
