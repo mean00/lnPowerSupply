@@ -4,9 +4,7 @@
 #![allow(non_snake_case)]
 #![allow(dead_code)]
 
-
-
-mod settings;
 mod app;
+mod settings;
 
 // EOF
