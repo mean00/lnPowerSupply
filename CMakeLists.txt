@@ -10,26 +10,16 @@ MESSAGE(STATUS "======================")
 #____________________
 # Options
 #____________________
-
-SET(USE_CLANG      ON CACHE INTERNAL "")
-SET(LN_ENABLE_RUST ON CACHE INTERNAL "")
-SET(LN_ENABLE_I2C  ON CACHE INTERNAL "")
-SET(LN_ENABLE_SPI  ON CACHE INTERNAL "")
+include(build_default.cmake)
 
 
 IF(FALSE)
-    SET(LN_LTO "-flto")
-    SET(LN_LTO_RUST_FLAGS ="-Clinker-plugin-lto=yes -Clto=thin")
+  SET(LN_LTO "-flto")
+  SET(LN_LTO_RUST_FLAGS ="-Clinker-plugin-lto=yes -Clto=thin")
 ELSE()
   #SET(LN_LTO_RUST_FLAGS ="-Clinker-plugin-lto=no ")
 ENDIF()
 #
-SET(LN_USB_NB_CDC  0 CACHE INTERNAL "")
-SET(LN_USB_NB_HID  0 CACHE INTERNAL "")
-SET(LN_USB_DFU_RUNTIME 1 CACHE INTERNAL "")
-SET(LN_ENABLE_USBD FALSE CACHE INTERNAL "")
-SET(LN_DEBUG_UART 1 CACHE INTERNAL "")
-
 SET(AF_FOLDER  ${CMAKE_SOURCE_DIR}/lnArduino/)
 include(./mcuSelect.cmake)
 SET(CMAKE_TOOLCHAIN_FILE ${AF_FOLDER}/lnArduino.cmake)
@@ -60,9 +50,9 @@ include_directories(src)
 # FPU
 #_______________________
 IF("${LN_ARCH}" STREQUAL "ARM")
-    IF("${LN_MCU}" STREQUAL "M3")
-        SET(FP_LIB qfpm3)
-    ENDIF()
+  IF("${LN_MCU}" STREQUAL "M3")
+    SET(FP_LIB qfpm3)
+  ENDIF()
 ENDIF()
 
 #_______________________
