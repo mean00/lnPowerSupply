@@ -31,6 +31,7 @@ PROJECT(lnPowerSupply NONE) # the NONE is very important !
 enable_language(C CXX ASM) # this is important too!
 
 #
+SET(LN_INITIAL_STACK_SIZE 1500)
 
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/include)
