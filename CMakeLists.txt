@@ -20,9 +20,10 @@ ELSE()
   #SET(LN_LTO_RUST_FLAGS ="-Clinker-plugin-lto=no ")
 ENDIF()
 #
-SET(AF_FOLDER  ${CMAKE_SOURCE_DIR}/lnArduino/)
+
+SET(ESPRIT_ROOT  ${CMAKE_SOURCE_DIR}/esprit/)
 include(./mcuSelect.cmake)
-SET(CMAKE_TOOLCHAIN_FILE ${AF_FOLDER}/lnArduino.cmake)
+SET(CMAKE_TOOLCHAIN_FILE ${ESPRIT_ROOT}/esprit.cmake)
 
 
 
@@ -35,9 +36,9 @@ SET(LN_INITIAL_STACK_SIZE 1500)
 
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/include)
-add_subdirectory(${AF_FOLDER})
+add_subdirectory(${ESPRIT_ROOT})
 
-include(${AF_FOLDER}/setup.cmake)
+include(${ESPRIT_ROOT}/setup.cmake)
 
 SET(EXTENSION "_${LN_MCU}")
 
@@ -69,9 +70,9 @@ USE_LIBRARY(NeVerMind)
 GENERATE_GD32_FIRMWARE(lnPowerSupply ${START_CODE}  )
 HASH_GD32_FIRMWARE( lnPowerSupply )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/src/rs)
-TARGET_LINK_LIBRARIES( lnPowerSupply lnarduino_c_bindings )
+TARGET_LINK_LIBRARIES( lnPowerSupply PRIVATE lnarduino_c_bindings )
 #TARGET_LINK_LIBRARIES( lnPowerSupply lnPowerSupply  )
-TARGET_LINK_LIBRARIES( lnPowerSupply rsPowerSupply )
+TARGET_LINK_LIBRARIES( lnPowerSupply PRIVATE rsPowerSupply )
 
 # Summary
 MESSAGE(STATUS "Configuration:")

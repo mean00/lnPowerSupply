@@ -1,22 +1,25 @@
-mod slave_task;
-mod utils;
 extern crate alloc;
 use crate::settings::*;
 use alloc::boxed::Box;
 use cty::c_void;
+//
+use rust_esprit as rn;
+//
 use rn::rn_fast_event_group::rnFastEventGroup;
 use rn::rn_gpio::{digital_write, pinMode, rnPin};
 use rn::rn_os_helper::delay_ms;
 use rn::rn_timing_adc::rnTimingAdc;
-use rnarduino as rn;
 
-use crate::app::slave_task::{i2c_task, PeripheralEvent};
+use crate::app::slave_task::{PeripheralEvent, i2c_task};
 type Display<'a> = rs_psu_gfx::gfx::display2::lnDisplay2<'a>;
 
 use ili9341::ili9341_init_sequence::{DSO_RESET, DSO_WAKEUP};
 use lnspi_ili9341::SpiIli9341;
-use rnarduino::rn_spi::{rnSPI, rnSPISettings, rnSpiBitOrder::SPI_MSBFIRST};
-use rnarduino::{lnLogger, lnLogger_init};
+use rn::rn_spi::{rnSPI, rnSPISettings, rnSpiBitOrder::SPI_MSBFIRST};
+use rn::{lnLogger, lnLogger_init};
+
+mod slave_task;
+mod utils;
 
 lnLogger_init!();
 /**
@@ -199,7 +202,7 @@ impl<'a> main_loop<'a> {
     }
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn rnInit() {
     lnLogger!("Setuping up Power Supply...\n");
 
@@ -216,7 +219,7 @@ pub extern "C" fn rnInit() {
  *
  *
  */
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn rnLoop() {
     let r = main_loop::new(); //&mut sl);
     let boxed: Box<main_loop> = Box::new(r);

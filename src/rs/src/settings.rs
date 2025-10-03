@@ -4,8 +4,9 @@
 #![allow(unused_doc_comments)]
 #![allow(unused_parens)]
 
+use rust_esprit as rn;
+//
 use rn::rn_gpio::rnPin;
-use rnarduino as rn;
 
 pub const PS_I2C_INSTANCE: usize = 1;
 

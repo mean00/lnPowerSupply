@@ -12,14 +12,15 @@ use cty::c_void;
 use ina219::INA219;
 use mcp4725::MCP4725;
 use pcf8574::PC8754;
-use rnarduino::rn_os_helper::{delay_ms, rnTaskEntry, rn_create_task};
+use rust_esprit::delay_ms;
+use rust_esprit::rn_os_helper::{rn_create_task, rnTaskEntry};
 
 pub type peripheral_callback = fn(cookie: *mut c_void, event: PeripheralEvent);
 
-use rnarduino::{lnLogger, lnLogger_init};
+use rust_esprit::{lnLogger, lnLogger_init};
 lnLogger_init!();
 
-extern "C" {
+unsafe extern "C" {
     fn lnp_c_hook() -> ();
 }
 

@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 cty = "0.2.2"
-rnarduino = { path = "../../../lnArduino/rust/rnArduino" }
+rust_esprit = { path = "../../../esprit/rust/rust_esprit"}
 
 [profile.dev]
 codegen-units = 1

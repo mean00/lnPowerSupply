@@ -1,14 +1,14 @@
 [package]
 name = "rsPowerSupply"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 
 [dependencies]
 cty = "0.2.2"
-rnarduino = { path = "../../lnArduino/rust/rnArduino" }
+rust_esprit = { path = "../../esprit/rust/rust_esprit"} #, features = [] , optional = true}
 ili9341 = { path = "../../simplerILI9341/rust/ili9341", features =["hs"]}
 lnspi_ili9341 =     { path = "../../simplerILI9341/rust/lnspi_ili9341/rs"}
 ufmt = "*"

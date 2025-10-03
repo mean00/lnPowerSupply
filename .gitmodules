@@ -7,3 +7,6 @@
 [submodule "simpler_INA219"]
 	path = simpler_INA219
 	url = ../simpler_INA219.git
+[submodule "esprit"]
+	path = esprit
+	url = ../esprit.git
