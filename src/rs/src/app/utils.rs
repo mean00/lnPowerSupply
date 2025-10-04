@@ -7,7 +7,7 @@ impl<'a> main_loop<'a> {
 
     */
     pub fn stop_due_to_low_voltage(&mut self) {}
-    /**
+    /*
      * Run the ADC to get
      * vbat as float in volt
      * maxCurrent as usize (0..4095)

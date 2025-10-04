@@ -52,7 +52,7 @@ pub struct i2c_task {
     obs_data: Option<*mut c_void>,
 }
 //-----------------------------------------------------------
-impl<'a> i2c_task {
+impl i2c_task {
     pub fn trampoline(param: *mut c_void) {
         unsafe {
             let me: &mut i2c_task = &mut (*(param as *mut i2c_task));

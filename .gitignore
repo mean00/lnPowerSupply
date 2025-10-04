@@ -27,3 +27,4 @@ Cargo.lock
 *.tmp
 old
 kicad/fp-info-cache
+kicad/~powersupply.kicad_sch.lck
