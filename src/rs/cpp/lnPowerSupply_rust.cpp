@@ -5,15 +5,20 @@
  *
  */
 #include "esprit.h"
-
+//
+#include "lnDebug.h"
 extern "C" void rnLoop(void);
 extern "C" void rnInit(void);
-
+extern void rttLoggerFunction(int n, const char *data);
+extern void LN_RTT_Init();
 /**
  *
  */
 void setup()
 {
+    LN_RTT_Init();
+    setLogger(rttLoggerFunction); // REDIRECT LOGGING TO RTT
+    Logger("\nJumping in rust part..\n");
     rnInit();
     return;
 }

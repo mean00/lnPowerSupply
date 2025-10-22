@@ -66,6 +66,7 @@ SET(START_CODE  ${CMAKE_CURRENT_SOURCE_DIR}/src/rs/cpp/lnPowerSupply_rust.cpp )
 #
 
 USE_LIBRARY(NeVerMind)
+USE_LIBRARY(ln-rtt)
 
 GENERATE_GD32_FIRMWARE(lnPowerSupply ${START_CODE}  )
 HASH_GD32_FIRMWARE( lnPowerSupply )

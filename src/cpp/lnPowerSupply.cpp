@@ -6,11 +6,11 @@
  */
 #include "esprit.h"
 //
+#include "LN_RTT.h"
 #include "lnADC.h"
 #include "lnDisplay.h"
 #include "lnHardwareConfiguration.h"
 #include "lnI2CTask.h"
-
 #define INA_MA_FLOOR 24
 #define ADC_SAMPLE 8
 
@@ -20,6 +20,7 @@ enum otherEvent
 };
 extern "C" void rnLoop(void);
 extern "C" void rnInit(void);
+extern void rttLoggerFunction(int n, const char *data);
 //----------
 
 extern lnI2cTask *createI2cTask(lnI2cTask::signalCb *c, const void *cookie);
@@ -42,7 +43,7 @@ const lnPin pins[2] = {PS_PIN_VBAT, PS_PIN_MAX_CURRENT};
  */
 void setup()
 {
-
+    setLogger(rttLoggerFunction); // REDIRECT LOGGING TO RTT
     Logger("Setuping up Power Supply...\n");
 
     lnPinMode(PS_PIN_VBAT, lnADC_MODE);
