@@ -101,7 +101,7 @@ impl<'a> main_loop<'a> {
             let mut voltage: f32 = self.control.voltage();
 
             if Self::is_set(ev, PeripheralEvent::ButtonEvent) {
-                delay_ms(50); // dumb anti bounce
+                delay_ms(40); // dumb anti bounce
                 let state = !rn::rn_gpio::digital_read(PIN_SWITCH);
                 if state {
                     self.outputEnabled = true;
@@ -113,7 +113,7 @@ impl<'a> main_loop<'a> {
                 self.control.set_output_enable(self.outputEnabled);
                 rn::rn_gpio::digital_write(PIN_LED, !self.outputEnabled); // active low
 
-                delay_ms(50); // dumb anti bounce
+                delay_ms(40); // dumb anti bounce
                 rn::rn_exti::enable_interrupt(PIN_SWITCH);
             }
 
