@@ -100,13 +100,21 @@ impl<'a> main_loop<'a> {
             let cc: bool = self.control.cc_limited();
             let mut voltage: f32 = self.control.voltage();
 
-            if Self::is_set(ev, PeripheralEvent::EnableButtonEvent) {
-                rn::rn_gpio::digital_write(PIN_LED, !self.outputEnabled); // active low
+            if Self::is_set(ev, PeripheralEvent::ButtonEvent) {
+                delay_ms(50); // dumb anti bounce
+                let state = !rn::rn_gpio::digital_read(PIN_SWITCH);
+                if state {
+                    self.outputEnabled = true;
+                //
+                } else {
+                    self.outputEnabled = false;
+                }
+                lnLogger!("Output Enabled = {}\n", self.outputEnabled);
                 self.control.set_output_enable(self.outputEnabled);
+                rn::rn_gpio::digital_write(PIN_LED, !self.outputEnabled); // active low
 
-                delay_ms(150); // dumb anti bounce
+                delay_ms(50); // dumb anti bounce
                 rn::rn_exti::enable_interrupt(PIN_SWITCH);
-                delay_ms(150); // dumb anti bounce
             }
 
             // Display voltage & current
@@ -157,10 +165,9 @@ impl<'a> main_loop<'a> {
      *
      */
     fn pushed(&mut self) {
-        self.outputEnabled = !self.outputEnabled;
         rn::rn_exti::disable_interrupt(PIN_SWITCH);
         self.event_group
-            .set_events(PeripheralEvent::EnableButtonEvent as u32);
+            .set_events(PeripheralEvent::ButtonEvent as u32);
     }
     /*
         Trampoline from C to class
@@ -229,7 +236,7 @@ pub extern "C" fn rnLoop() {
     //-----------------------------------------------
     rn::rn_exti::attach_interrupt(
         PIN_SWITCH,
-        rn::rn_exti::rnEdge::LN_EDGE_FALLING,
+        rn::rn_exti::rnEdge::LN_EDGE_BOTH,
         Some(main_loop::onOffCallback),
         ptr as *mut cty::c_void,
     );
