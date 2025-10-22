@@ -28,7 +28,7 @@ pub enum PeripheralEvent {
     CCChangeEvent = 1,
     VoltageChangeEvent = 2,
     CurrentChangeEvent = 4,
-    EnableButtonEvent = 8,
+    ButtonEvent = 8,
 }
 
 pub struct i2c_task {
@@ -155,6 +155,7 @@ impl i2c_task {
 
     pub fn start_slave_task(&mut self) //,  cb : &'a dyn peripheral_notify)
     {
+        //return;
         let myself = self as *mut _ as *mut c_void;
         rn_create_task(
             &(Self::trampoline as rnTaskEntry),
