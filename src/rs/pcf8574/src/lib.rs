@@ -30,7 +30,7 @@ impl PC8754 {
         r
     }
     fn default_configuration(&mut self) {
-        self.i2c.begin(self.address);
+        //self.i2c.begin(self.address);
         self.i2c.write_to(self.address, &[self.conf]);
     }
     pub fn refresh(&mut self) {
