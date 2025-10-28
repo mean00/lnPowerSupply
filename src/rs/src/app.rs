@@ -218,7 +218,7 @@ pub extern "C" fn rnInit() {
     pinMode(rnPin::PC13, rn::rn_gpio::rnGpioMode::lnOUTPUT);
     digital_write(PIN_LED, true);
     pinMode(PIN_LED, rn::rn_gpio::rnGpioMode::lnOUTPUT);
-    pinMode(PIN_SWITCH, rn::rn_gpio::rnGpioMode::lnINPUT_PULLDOWN);
+    pinMode(PIN_SWITCH, rn::rn_gpio::rnGpioMode::lnINPUT_PULLUP);
 }
 
 /**
